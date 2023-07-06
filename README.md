@@ -65,3 +65,4 @@ KAG is smaller and thus faster than KAU ( O(10 minutes) elapsed.
 
 I do not know any current way of pulling this data in batch mode from the command line.
 
+https://forum.kinesis.money/search/15355/?c[users]=Z%C3%BCrichGnome&o=date
