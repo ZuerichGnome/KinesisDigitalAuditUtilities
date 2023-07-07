@@ -10,7 +10,10 @@ printf "%s\n" "Hello world";
 
 echo $SHELL
 
-# ping kinesis.money
+ping -c 5 kinesis.money
+ping -c 5 mint.abx.com
+ping -c 5 explorer.kinesis.money
+ping -c 5 forum.kinesis.money
 
 whois kinesis.money | grep -i "Registrant Organization\|City"
 
