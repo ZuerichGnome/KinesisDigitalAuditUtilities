@@ -161,7 +161,7 @@ set | grep KAG | sed -n '1,5p' | cut -d= -f1 > t3
 # later >> appends to this file jsut created
 #
 
-outputfile=outputfile-`date -u +"%Y-%m-%d-T%H:%I:%S-%Z"`
+outputfile=outputfile-`date -u +"%Y-%m-%dT%T-%Z"`
 touch $outputfile
 
 pr -w 90 -m -t t3 t1 t2 | expand >> $outputfile
