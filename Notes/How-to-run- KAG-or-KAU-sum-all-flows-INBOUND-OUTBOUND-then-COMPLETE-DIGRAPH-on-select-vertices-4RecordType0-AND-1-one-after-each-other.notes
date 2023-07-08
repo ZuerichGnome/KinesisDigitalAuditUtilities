@@ -1,0 +1,95 @@
+#
+# Notes
+#
+# How to run 
+# KAG-or-KAU-sum-all-flows-INBOUND-OUTBOUND-then-COMPLETE-DIGRAPH-on-select-vertices-4RecordType0.sh
+# with its 3 input parameters
+#
+# To make sense of output files, check:
+#
+# ./KAG-or-KAU-sum-all-flows-INBOUND-OUTBOUND-then-COMPLETE-DIGRAPH-on-select-vertices-4RecordType0.sh
+#                                                                                                 *
+# ./KAG-or-KAU-sum-all-flows-INBOUND-OUTBOUND-then-COMPLETE-DIGRAPH-on-select-vertices-4RecordType1.sh
+#                                                                                                 *
+#
+
+#
+# KAG before KAU 
+# (alphabetical)
+#
+
+# ----------------------------------------------------------
+#
+# KAG
+#
+# ----------------------------------------------------------
+
+#
+# Preparation
+#
+KAG_extract=../dat/kag-stellar-export-using-Operations-TAB-2023-07-05-T12\:12\:12-UTC.csv 
+
+. ./KAG-set-main-account-symbols.sh 
+
+cut -d= -f2 KAG-set-main-account-symbols.sh > Vertices
+cat Vertices 
+wc -l Vertices 
+
+#
+# Type 0
+#
+KAG_outputfile=KAG_outputfile-`date -u +"%Y-%m-%dT%T-%Z"`
+touch $KAG_outputfile 
+echo $KAG_outputfile
+
+./KAG-or-KAU-sum-all-flows-INBOUND-OUTBOUND-then-COMPLETE-DIGRAPH-on-select-vertices-4RecordType0.sh $KAG_extract Vertices KAG-set-main-account-symbols.sh > $KAG_outputfile 
+
+#
+# Type 1
+#
+KAG_outputfile=KAG_outputfile-`date -u +"%Y-%m-%dT%T-%Z"`
+touch $KAG_outputfile 
+echo $KAG_outputfile
+
+./KAG-or-KAU-sum-all-flows-INBOUND-OUTBOUND-then-COMPLETE-DIGRAPH-on-select-vertices-4RecordType1.sh $KAG_extract Vertices KAG-set-main-account-symbols.sh > $KAG_outputfile 
+
+
+# ----------------------------------------------------------
+#
+# KAU
+#
+# ----------------------------------------------------------
+
+
+#
+# Preparation
+#
+
+KAU_extract=../dat/kau-stellar-export-using-Operations-TAB-2023-07-05-T12\:12\:21-UTC.csv 
+. ./KAU-set-main-account-symbols.sh 
+cut -d= -f2 KAU-set-main-account-symbols.sh > Vertices
+cat Vertices 
+wc -l Vertices 
+
+
+#
+# Type 0
+#
+KAU_outputfile=KAU_outputfile-`date -u +"%Y-%m-%dT%T-%Z"`
+touch $KAU_outputfile 
+echo $KAU_outputfile
+
+./KAG-or-KAU-sum-all-flows-INBOUND-OUTBOUND-then-COMPLETE-DIGRAPH-on-select-vertices-4RecordType0.sh $KAU_extract Vertices KAU-set-main-account-symbols.sh > $KAU_outputfile 
+
+#
+# Type 1
+#
+KAU_outputfile=KAU_outputfile-`date -u +"%Y-%m-%dT%T-%Z"`
+touch $KAU_outputfile 
+echo $KAU_outputfile
+
+./KAG-or-KAU-sum-all-flows-INBOUND-OUTBOUND-then-COMPLETE-DIGRAPH-on-select-vertices-4RecordType1.sh $KAU_extract Vertices KAU-set-main-account-symbols.sh > $KAU_outputfile 
+
+#
+# EOF
+#
