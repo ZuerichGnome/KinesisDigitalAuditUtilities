@@ -33,7 +33,7 @@
 #
 # -------------------------------------------------------------
 
-mv ../dat/stellar-export.csv ../dat/kag-stellar-export-using-Operations-TAB-`date -u +"%Y-%m-%d-T%H:%I:%S-%Z"`.csv
+mv ../dat/stellar-export.csv ../dat/kag-stellar-export-using-Operations-TAB-`date -u +"%Y-%m-%dT%T-%Z"`.csv
 
 KAG_extract=../dat/kag-stellar-export-using-Operations-TAB-2023-07-05-T12\:12\:12-UTC.csv 
 
