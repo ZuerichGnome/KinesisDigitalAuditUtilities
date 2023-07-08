@@ -34,7 +34,7 @@
 # -------------------------------------------------------------
 
 
-mv ../dat/stellar-export.csv ../dat/kau-stellar-export-using-Operations-TAB-`date -u +"%Y-%m-%d-T%H:%I:%S-%Z"`.csv
+mv ../dat/stellar-export.csv ../dat/kau-stellar-export-using-Operations-TAB-`date -u +"%Y-%m-%dT%T-%Z"`.csv
 
 KAU_extract=../dat/kau-stellar-export-using-Operations-TAB-2023-07-05-T12\:12\:21-UTC.csv 
 
