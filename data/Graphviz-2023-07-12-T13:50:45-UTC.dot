@@ -1,0 +1,16 @@
+digraph {
+H->U [label =     311482 color="orange"]
+E->U [label =   47213176 color="orange"]
+H->F [label =     191421 color="orange"]
+I->F [label =      14662 color="orange"]
+R->I [label =        110 color="orange"]
+R->E [label =         90 color="orange"]
+E->U [label =    3140466 color="blue"]
+G->H [label =     609000 color="blue"]
+H->G [label =    1426079 color="blue"]
+H->E [label =   49102084 color="blue"]
+I->G [label =       1166 color="blue"]
+I->H [label =     228931 color="blue"]
+I->E [label =      78010 color="blue"]
+R->E [label =    3060422 color="blue"]
+}
