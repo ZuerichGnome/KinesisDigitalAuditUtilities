@@ -1,0 +1,84 @@
+
+
+#
+# Download from Watcher
+#
+# https://watcher.aboutkinesis.com/operations
+#
+# mouse click
+# set custom network upper right
+# to either KAG or KAU
+#
+# Operations tab
+# mouse click at bottom to extract to flatfile
+#
+# KAG is smaller then KAU
+# the latter takes order of 5-10 minutes (not measured)
+#
+
+---------------------
+
+KAG before KAU
+
+
+---------------------
+
+KAG
+
+---------------------
+
+mv ../dat/stellar-export.csv ../dat/kag-stellar-export`date -u +"-%Y-%m-%d-T%T-%Z"`.csv
+
+KAG_extract=../dat/kag-stellar-export-2023-07-12-T13:34:51-UTC.csv
+
+echo $KAG_extract 
+# ../dat/kag-stellar-export-2023-07-12-T13:34:51-UTC.csv
+
+
+# Check format on the "plat du jour":
+
+head -1 $KAG_extract | sed 's/,/\n/g' | nl -ba > KAG_header
+
+for i in `cat RequiredFields-Type0`; do grep -w $i KAG_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE0-/'
+# TYPE0-11-8-10-6-7-4-5
+
+for i in `cat RequiredFields-Type1`; do grep -w $i KAG_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+# TYPE1-13-14-15-6-7-4-5
+
+
+#
+# based on what we just found
+#
+./KAG-or-KAU-digraph-build-dot-file.sh $KAG_extract KAG TYPE0-11-8-10 TYPE1-13-14-15
+
+
+---------------------
+
+KAU
+
+---------------------
+
+
+mv ../dat/stellar-export.csv ../dat/kau-stellar-export`date -u +"-%Y-%m-%d-T%T-%Z"`.csv
+
+KAU_extract=../dat/kau-stellar-export-2023-07-12-T13\:41\:19-UTC.csv 
+echo $KAU_extract 
+# ../dat/kau-stellar-export-2023-07-12-T13:41:19-UTC.csv
+
+head -1 $KAU_extract | sed 's/,/\n/g' | nl -ba > KAU_header
+
+for i in `cat RequiredFields-Type0`; do grep -w $i KAU_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE0-/'
+# TYPE0-11-8-10-6-7-4-5
+
+for i in `cat RequiredFields-Type1`; do grep -w $i KAU_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+# TYPE1-13-14-15-6-7-4-5
+
+
+#
+# based on what we just found
+#
+./KAG-or-KAU-digraph-build-dot-file.sh $KAU_extract KAU TYPE0-11-8-10 TYPE1-13-14-15
+
+
+
+---------------------
