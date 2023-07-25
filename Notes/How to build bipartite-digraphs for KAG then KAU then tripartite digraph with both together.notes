@@ -1,0 +1,913 @@
+---------------
+
+Post #1
+[Forensics] KAG. Minting. Deep dive drill-down
+https://forum.kinesis.money/threads/forensics-kag-minting-deep-dive-drill-down.1763/
+
+Post #2
+[Forensics] KAU. Minting. Deep dive then a quick skim
+
+Post #3
+[Forensics] KAG and KAU. Top 15 minters. Tripartite digraph
+
+---------------
+
+Do KAG again
+So I can write it up cleanly
+
+Di 25 Jul 2023 10:40:53 UTC
+
+-------------
+
+Kinesis minting rules:
+
+KAG minting unit:
+200
+(200 ozt Ag)
+
+KAU minting unit:
+100
+(100 g Au)
+
+------------------------------------------
+
+We re-work the above from more recent data.
+
+Separate the vertices into 2 sets:
+
+Emission and HotWallet on the left
+The top 15 minter users on the right
+
+
+GCTY is KAG Emission aka The Mint
+GCGTMT2X=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+
+GDIE is KAU Emission also aka The Mint
+GDIENNQ3=GDIENNQ3BXCTB74ZYCQAGXCY7KTGFBZGHRMUVF3ZLIW6SMAZIGX2JCCS
+
+------------------------------------------
+KAG
+------------------------------------------
+
+
+The input format from Watcher node can vary across the 2 record types (create_account, payment) and from day to day.
+So we check it:
+
+echo $KAG_extract
+# ../dat/kag-stellar-export-2023-07-23-T13:29:49-UTC.csv
+head -1 $KAG_extract | sed 's/,/\n/g' | nl -ba > KAG_header
+for i in `cat RequiredFields-Type0`; do grep -w $i KAG_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE0-/'
+#TYPE0-11-8-10-6-7-4-5
+for i in `cat RequiredFields-Type1`; do grep -w $i KAG_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+# TYPE1-13-14-15-6-7-4-5
+
+
+---------------------------
+
+Extract all minters
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '($5=="0") && ($11==e) && !($10 % 200) {print $8}' | sort -u | wc -l
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '($5=="0") && ($11==e) && !($10 % 200) {print $8}' | sort -u | wc -l
+1261
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '($5=="0") && ($11==e) && !($10 % 200) {print $8}' | sort -u > KAG-unique-users 
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '($5=="0") && ($11==e) && !($10 % 100) {print $8}' | sort -u > KAG-unique-users 
+linux> head KAG-unique-users 
+
+head -10 KAG-unique-users > test2
+
+
+KAG_outputfile=KAG_outputfile-`date -u +"%Y-%m-%d-T%T-%Z"`
+touch $KAG_outputfile 
+
+time while IFS= read x
+do
+  echo $x
+  sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount -v user=$x '($5=="0") && ($11==e) && ($8==user) && !($10 % 200) {sum_10 += $10} END {printf "%-10.2f\n", sum_10}'
+#done < test2
+done < KAG-unique-users >> $KAG_outputfile 
+
+real	5m4.166s
+user	7m23.454s
+sys	0m41.601s
+
+
+linux> cat $KAG_outputfile | awk 'NR%2 {printf("%s\t", $0); next} {print $0}' | sort -k2rn
+
+cat $KAG_outputfile | awk 'NR%2 {printf("%s\t", $0); next} {print $0}' | sort -k2rn > KAG-minters
+
+linux> cat $KAG_outputfile | awk 'NR%2 {printf("%s\t", $0); next} {print $0}' | sort -k2rn > KAG-minters
+linux> head KAG-minters 
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q	595600.00 
+GCPDJKTJEZZNO3FRCDQ424PZWPNJNEO7XUIPS364EZ7YKWVFBLSL5CGA	454200.00 
+GCSWXZXMJAWP3MV4N6JBLGKSRXR632A5OWQXXYRWF67ZMDLMU42XJP3O	279200.00 
+GAHIR5ERN26ORNDNWUMKNAUDZQRJISSBNU76IIIEM55LIAFUXWS2TVH4	210800.00 
+GAXBHL4VZUVEDZLFZNZB27XSA3WKD6Z2RERRK3ZVWC7RX5I42TOF64MN	195000.00 
+GBPJ3A3HIH2PEUBHJC55IUSTW734EQVEMJ72A7NXY7MM5ORCWPBEGHHA	191800.00 
+GCZ4KXQFSANZK5PPPV2Z37O4NNQCL4XNWGM5TZSZSETSJYVR7QDVFDQU	166400.00 
+GCIELRZ5HNIPNYHB3ZEFIGDO4WYB5KE2GXEE7DT6YUVEIAPDK6R2PXZN	140200.00 
+GBZJJ2KYXRS4XSIF4DIVZLFHACZQH4PSO43LJWEDPOF7IMPH6PWCD6KL	112200.00 
+GBPW7IJL5KRDOM5RGMKVVPO6Q6DLBAZIBXV3AB5OIXKZ5MUQC4GIRWRQ	103800.00 
+
+-------------------
+
+For reference:
+
+linux> units -t "100 thousand ozt" t
+3.1103477
+linux> units -t "100 thousand ozt XAG (1/ozt)" USD
+2436000
+
+100 Kozt = 3.1 tonnes
+100 Kozt Ag worth 2.4 M USD at current fake spot prices
+
+Warning:
+The above are flows (a bit like turnover).
+If those minters then redeem (off-chain at KMS Exchange), their net stock may be much lower.
+
+Mint cycling currently incentivises turnover to reap KVT tokens (100K USD turnover -> 1 KVT)
+
+https://kinesis.money/about-us/fees/
+
+A mint operation generates fees
+0.22% 
+
+Mint trade execution fee	
+0.45% per transaction
+
+Physical redemption
+0.45% + $100 + delivery fee*	
+
+As an illustration,
+assume you mint-cycle 3 tonnes Ag
+
+linux> units -t "100 thousand ozt XAG (1/ozt) (0.45 percent + 0.22 percent)" USD
+16321.2
+
+
+-------------------
+
+Build a bipartite digraph
+
+E and H on one side
+The top minters on the other
+
+To simplify processing, use the first 8 characters of the 56 Stellar account address each time.
+
+Create DecodeTable of the format:
+(first 8)=(the full 56)
+
+We process on the full 56
+The First 8 are for the graphics. For display.
+
+From previous work:
+
+linux> cat KAG-set-main-account-symbols.sh
+KAG_EmissionAccount=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+KAG_HotWalletAccount=GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+KAG_InflationAccount=GBBVUAMR3CYNQKMNHVWCMUQVE3XQIL3WM5GSP5D6SCECKIZNNBT6FT7I
+KAG_RootAccount=GAUCIFE37F4KQ5F6QPNSZ75QKRQTNRCF32FZNUXMCXUFSKRMWGF76LTI
+KAG_GAPSAccount=GAPS3KZ4YVEL4UYFAGTE6L6H6GRZ3KYBWGY2UTGTAJBXGUJLBCYQIXXA
+FeePoolAccount=GDVIVQWQIOVXP4EWQNLZHEGGLUUQALJ47HSN2MZXCEJKSSH4DBRT5BDM
+
+grep 'KAG_EmissionAccount\|KAG_HotWalletAccount' KAG-set-main-account-symbols.sh | cut -d= -f2 > Set-A
+head -15 KAG-minters | cut -f1 > Set-B
+
+#
+# awk 'NR%2 {printf("%s\t", $0);
+# from above 
+# where \t is a neat separator
+# both "cut" and "sort" expect a tab by default
+#
+
+linux> head -15 KAG-minters | cut -f1
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q
+GCPDJKTJEZZNO3FRCDQ424PZWPNJNEO7XUIPS364EZ7YKWVFBLSL5CGA
+GCSWXZXMJAWP3MV4N6JBLGKSRXR632A5OWQXXYRWF67ZMDLMU42XJP3O
+GAHIR5ERN26ORNDNWUMKNAUDZQRJISSBNU76IIIEM55LIAFUXWS2TVH4
+GAXBHL4VZUVEDZLFZNZB27XSA3WKD6Z2RERRK3ZVWC7RX5I42TOF64MN
+GBPJ3A3HIH2PEUBHJC55IUSTW734EQVEMJ72A7NXY7MM5ORCWPBEGHHA
+GCZ4KXQFSANZK5PPPV2Z37O4NNQCL4XNWGM5TZSZSETSJYVR7QDVFDQU
+GCIELRZ5HNIPNYHB3ZEFIGDO4WYB5KE2GXEE7DT6YUVEIAPDK6R2PXZN
+GBZJJ2KYXRS4XSIF4DIVZLFHACZQH4PSO43LJWEDPOF7IMPH6PWCD6KL
+GBPW7IJL5KRDOM5RGMKVVPO6Q6DLBAZIBXV3AB5OIXKZ5MUQC4GIRWRQ
+GBBIXA2YD33DKROEKSRP5MYEGBYSUKGAUQPCFYW7HHI5NHRRNYNWSIBM
+GDEPDZCGVQ7U3337CM6QQU5GDDXMEXVM77WNLW3RFNP6JS45HVYW53AL
+GDIPKUWTYDZKSWCQTOM7WAB74LCPK2KARNCN2B7YXGMIQ4P57QEABNQK
+GDII7WVCRRPW6CFWM2UM4HJAVKI34QYDE2V625CZNGYRYPRDLGVWA4BA
+GB572UTY2ISPYYVOPIAVYZ3Q227UMXPLVPTUZBF4J6OS7BUBIJKNAHX3
+
+#
+# Clean-up beforehand
+#
+if [ -f "DecodeTable" ]; then rm -f DecodeTable; fi; touch DecodeTable;
+#
+# Extract the first 8 characters
+# Then the full string
+#
+grep 'KAG_EmissionAccount\|KAG_HotWalletAccount' KAG-set-main-account-symbols.sh | cut -d= -f2 | cut -c1-8 > t
+grep 'KAG_EmissionAccount\|KAG_HotWalletAccount' KAG-set-main-account-symbols.sh | cut -d= -f2 > tt
+paste -d= t tt >> DecodeTable
+rm -f t tt
+#
+# Write to same DecodeTable
+#
+head -15 KAG-minters | cut -f1 | cut -c1-8 > u
+head -15 KAG-minters | cut -f1 > uu
+paste -d= u uu >> DecodeTable
+rm -f u uu
+#
+# for clarity so i can include the output as a comment here
+#
+nl -ba DecodeTable | sed 's/^/# /g'
+#      1	GCGTMT2X=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+#      2	GBTYCT2V=GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+#      3	GD7EOW2P=GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q
+#      4	GCPDJKTJ=GCPDJKTJEZZNO3FRCDQ424PZWPNJNEO7XUIPS364EZ7YKWVFBLSL5CGA
+#      5	GCSWXZXM=GCSWXZXMJAWP3MV4N6JBLGKSRXR632A5OWQXXYRWF67ZMDLMU42XJP3O
+#      6	GAHIR5ER=GAHIR5ERN26ORNDNWUMKNAUDZQRJISSBNU76IIIEM55LIAFUXWS2TVH4
+#      7	GAXBHL4V=GAXBHL4VZUVEDZLFZNZB27XSA3WKD6Z2RERRK3ZVWC7RX5I42TOF64MN
+#      8	GBPJ3A3H=GBPJ3A3HIH2PEUBHJC55IUSTW734EQVEMJ72A7NXY7MM5ORCWPBEGHHA
+#      9	GCZ4KXQF=GCZ4KXQFSANZK5PPPV2Z37O4NNQCL4XNWGM5TZSZSETSJYVR7QDVFDQU
+#     10	GCIELRZ5=GCIELRZ5HNIPNYHB3ZEFIGDO4WYB5KE2GXEE7DT6YUVEIAPDK6R2PXZN
+#     11	GBZJJ2KY=GBZJJ2KYXRS4XSIF4DIVZLFHACZQH4PSO43LJWEDPOF7IMPH6PWCD6KL
+#     12	GBPW7IJL=GBPW7IJL5KRDOM5RGMKVVPO6Q6DLBAZIBXV3AB5OIXKZ5MUQC4GIRWRQ
+#     13	GBBIXA2Y=GBBIXA2YD33DKROEKSRP5MYEGBYSUKGAUQPCFYW7HHI5NHRRNYNWSIBM
+#     14	GDEPDZCG=GDEPDZCGVQ7U3337CM6QQU5GDDXMEXVM77WNLW3RFNP6JS45HVYW53AL
+#     15	GDIPKUWT=GDIPKUWTYDZKSWCQTOM7WAB74LCPK2KARNCN2B7YXGMIQ4P57QEABNQK
+#     16	GDII7WVC=GDII7WVCRRPW6CFWM2UM4HJAVKI34QYDE2V625CZNGYRYPRDLGVWA4BA
+#     17	GB572UTY=GB572UTY2ISPYYVOPIAVYZ3Q227UMXPLVPTUZBF4J6OS7BUBIJKNAHX3
+
+#
+# 2 + 15 lines
+# as expected
+#
+
+---------------------------
+
+On your marks
+Set
+Go
+
+time ./build-dot-file-4-bipartite-digraph.sh $KAG_extract TYPE0-11-8-10 TYPE1-13-14-15 Set-A Set-B DecodeTable
+
+linux> time ./build-dot-file-4-bipartite-digraph.sh $KAG_extract TYPE0-11-8-10 TYPE1-13-14-15 Set-A Set-B DecodeTable
+Parameters
+./build-dot-file-4-bipartite-digraph.sh
+../dat/kag-stellar-export-2023-07-23-T13:29:49-UTC.csv
+TYPE0-11-8-10
+TYPE1-13-14-15
+Set-A
+Set-B
+DecodeTable
+Graphviz-2023-07-25-T11:55:39-UTC.png
+Graphviz-2023-07-25-T11:55:39-UTC.dot
+
+real	0m18.001s
+user	0m20.101s
+sys	0m2.298s
+
+20 seconds
+
+Fish out work done:
+
+outputfile-2023-07-25-T11:55:29-UTC-TYPE0
+outputfile-2023-07-25-T11:55:39-UTC-TYPE1
+Graphviz-2023-07-25-T11:55:39-UTC.dot
+Graphviz-2023-07-25-T11:55:39-UTC.png
+'How to build bipartite-digraphs for KAG then KAU then tripartite digraph with both together.notes'
+
+Park at github
+Post on forum.kinesis.money
+
+
+linux> more Graphviz-2023-07-25-T11\:55\:39-UTC.dot 
+digraph {
+rankdir="LR"
+GCGTMT2X->GD7EOW2P [label =     595600 color="orange"]
+GCGTMT2X->GCPDJKTJ [label =     454200 color="orange"]
+GCGTMT2X->GCSWXZXM [label =     279200 color="orange"]
+GCGTMT2X->GAHIR5ER [label =     210800 color="orange"]
+GCGTMT2X->GAXBHL4V [label =     195000 color="orange"]
+GCGTMT2X->GBPJ3A3H [label =     191800 color="orange"]
+GCGTMT2X->GCZ4KXQF [label =     166400 color="orange"]
+GCGTMT2X->GCIELRZ5 [label =     140200 color="orange"]
+GCGTMT2X->GBZJJ2KY [label =     112200 color="orange"]
+GCGTMT2X->GBPW7IJL [label =     103800 color="orange"]
+GCGTMT2X->GBBIXA2Y [label =     103200 color="orange"]
+GCGTMT2X->GDEPDZCG [label =     100600 color="orange"]
+GCGTMT2X->GDIPKUWT [label =      94600 color="orange"]
+GCGTMT2X->GDII7WVC [label =      91000 color="orange"]
+GCGTMT2X->GB572UTY [label =      89000 color="orange"]
+GBTYCT2V->GD7EOW2P [label =     357526 color="orange"]
+GBTYCT2V->GAHIR5ER [label =          1 color="orange"]
+GBTYCT2V->GCZ4KXQF [label =      18353 color="orange"]
+GBTYCT2V->GBZJJ2KY [label =        204 color="orange"]
+GBTYCT2V->GBBIXA2Y [label =       2843 color="orange"]
+GBTYCT2V->GDEPDZCG [label =      77855 color="orange"]
+GBTYCT2V->GB572UTY [label =        597 color="orange"]
+GCGTMT2X->GAHIR5ER [label =      13200 color="blue"]
+GCGTMT2X->GCZ4KXQF [label =       1000 color="blue"]
+GCGTMT2X->GBPW7IJL [label =       2400 color="blue"]
+GCGTMT2X->GDEPDZCG [label =      10800 color="blue"]
+GBTYCT2V->GCZ4KXQF [label =        612 color="blue"]
+GBTYCT2V->GDEPDZCG [label =        869 color="blue"]
+}
+linux> 
+linux> display Graphviz-2023-07-25-T11\:55\:39-UTC.png 
+
+
+
+
+
+------------------------------------------
+KAU
+------------------------------------------
+
+linux> . ./KAU-set-main-account-symbols.sh 
+
+linux> echo $KAU_extract 
+../dat/kau-stellar-export-2023-07-23-T13:36:43-UTC.csv
+linux> KAU_extract=../dat/kau-stellar-export-2023-07-23-T13\:36\:43-UTC.csv 
+
+head -1 $KAU_extract | sed 's/,/\n/g' | nl -ba > KAU_header
+for i in `cat RequiredFields-Type0`; do grep -w $i KAU_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE0-/'
+for i in `cat RequiredFields-Type1`; do grep -w $i KAU_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+# TYPE0-11-8-10-6-7-4-5
+# TYPE1-13-14-15-6-7-4-5
+
+# Both KAG and KAU have same format today. See above
+
+#
+# Modulo 100
+# not 200 as with KAG
+#
+
+time sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '($5=="0") && ($11==e) && !($10 % 100) {sum_10 += $10} END {printf  "%-10.2f\n", sum_10}' 
+linux> time sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '($5=="0") && ($11==e) && !($10 % 100) {sum_10 += $10} END {printf  "%-10.2f\n", sum_10}' 
+47152700.00
+
+real	0m1.334s
+user	0m0.933s
+sys	0m0.136s
+
+-------------------------------------------------
+
+#
+# Extract all minters
+#
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '($5=="0") && ($11==e) && !($10 % 100) {print $8}' | sort -u | wc -l
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '($5=="0") && ($11==e) && !($10 % 100) {print $8}' | sort -u | wc -l
+1095
+
+head -10 KAU-unique-users > test
+
+KAU_outputfile=KAU_outputfile-`date -u +"%Y-%m-%d-T%T-%Z"`
+touch $KAU_outputfile 
+
+#
+# test run
+#
+time while IFS= read x
+do
+  echo $x
+  sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v user=$x '($5=="0") && ($11==e) && ($8==user) && !($10 % 100) {sum_10 += $10} END {printf  "%-10.2f\n", sum_10}'
+done < test > $KAU_outputfile 
+
+#
+# for real
+#
+time while IFS= read x
+do
+  echo $x
+  sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v user=$x '($5=="0") && ($11==e) && ($8==user) && !($10 % 100) {sum_10 += $10} END {printf  "%-10.2f\n", sum_10}'
+done < KAU-unique-users > $KAU_outputfile
+
+linux> time while IFS= read x
+do
+  echo $x
+  sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v user=$x '($5=="0") && ($11==e) && ($8==user) && !($10 % 100) {sum_10 += $10} END {printf  "%-10.2f\n", sum_10}'
+done < KAU-unique-users > $KAU_outputfile
+
+real	11m55.955s
+user	16m55.556s
+sys	1m30.243s
+
+
+
+#
+# Merge every group of 2 lines into 1 line
+#
+cat $KAU_outputfile | awk 'NR%2 {printf("%s\t", $0); next} {print $0}' | sort -k2rn > KAU-minters
+
+
+wc -l KAU-minters
+awk '($2>1000) {print $0}' KAU-minters | wc -l
+grep -v -w 100.00 KAU-minters | wc -l
+
+1095 KAU-minters
+478
+769
+
+linux> bc <<< "1095 - 769"
+326
+
+326 minted exactly 100 KAU
+769 minted more than 100 KAU
+478 minted more than 1000 KAU
+
+head -15 KAU-minters
+
+linux> head -15 KAU-minters
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q	20675400.00
+GBBIXA2YD33DKROEKSRP5MYEGBYSUKGAUQPCFYW7HHI5NHRRNYNWSIBM	3071800.00
+GCPDJKTJEZZNO3FRCDQ424PZWPNJNEO7XUIPS364EZ7YKWVFBLSL5CGA	2581200.00
+GCRKCT7TWFVMET5KWFOP2OHN6L57Z3U6QGXKVEULEBFE6FBUUNVEH5MA	1242600.00
+GBW4XYJPEK7CI4TSK2T56I4TOXH3ARQQXPTVNRGZEDJNEDYP4V4OMP5I	1151800.00
+GAHPAUTIZTRTMOTUJ6MPFAWFJ2SSC5S6Z5YUL7QKIUDRESKATFOZJ4HP	1096900.00
+GBVNQGRZYWDRBE57TU7Z62IRLFODSIFZ3WW2QQH4V4YRSGDB6AP5VNRS	1092200.00
+GBBXN3CBWAFH5P46KJRERQHDNPWWJQXGZ76WF2H27EETPMMOBEUQ62NN	1001000.00
+GDEPDZCGVQ7U3337CM6QQU5GDDXMEXVM77WNLW3RFNP6JS45HVYW53AL	832400.00 
+GC22K5MZTCWOQVB5B5DR5ZSIZ4P3ZOS3KCK256F3TYJL643UDW4TXQHJ	669800.00 
+GAU5CJDZXBR4JLAX6GQW6NUC5RGCTOOSIZJLJTBL6LBQ6DMZY6OWVS4O	636800.00 
+GAW2TKRSNRX46ILOQ3E6SVUFY5CGH2I34PLUIRQH3IXVWFJXQQKMLXIV	572500.00 
+GDJNK7YUXVFDUI4UKE6WEHJV4WMJ3MQV7T7TLP4JCZOLCL6T7BON2A6P	459800.00 
+GDKKDENEIVFPGZZP6ZYE5M2I47SLIO5432QYTXLZ3C4QQJ753TFYN7GK	439300.00 
+GB3LQCN3D6BCXL6P46FZBRVVMV7YDBZF3MSDHOZJFMTTQ3SBDJHY5UKV	387200.00 
+
+
+-----------------
+
+For reference:
+
+linux> units -t "100 thousand g" kg
+100
+linux> units -t "100 thousand g XAU (1/ozt)" USD
+6286628.4
+
+100 kg Au worth 6.3 M USD at current repressed spot price
+
+
+
+Warning:
+The above are flows (like turnover).
+If those minters then redeem (off-chain at KMS Exchange), their net stock may be much lower.
+
+Mint cycling currently incentivises turnover to reap KVT tokens (100K USD turnover in KAG or in KAU -> 1 KVT).
+The threshold used to be 50K USD. Then 75K USD. If memory serves me right.
+
+
+https://kinesis.money/about-us/fees/
+
+Buy or sell gold (KAU) and silver (KAG) bullion at quoted market price, via the Kinesis dashboard or the Kinesis Exchange.
+0.22% fee
+
+Mint trade execution fee	
+0.45% per transaction
+
+Physical redemption
+0.45% + $100 + delivery fee*	
+
+
+As an illustration,
+assume you mint-cycle 100 kg Au
+
+linux> units -t "100 thousand g XAU (1/ozt) (0.45 percent + 0.22 percent)" USD
+42120.41
+
+
+-----------------
+
+Any common users between KAG and KAU? (quite likely)
+
+linux> head -15 KAG-minters | cut -f1 > KAG-top
+linux> head -15 KAU-minters | cut -f1 > KAU-top
+
+
+
+linux>  comm -12 <(sort KAG-top) <(sort KAU-top)
+GBBIXA2YD33DKROEKSRP5MYEGBYSUKGAUQPCFYW7HHI5NHRRNYNWSIBM
+GCPDJKTJEZZNO3FRCDQ424PZWPNJNEO7XUIPS364EZ7YKWVFBLSL5CGA
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q
+GDEPDZCGVQ7U3337CM6QQU5GDDXMEXVM77WNLW3RFNP6JS45HVYW53AL
+
+
+linux> more KA[GU]-top
+
+# Will not make use of the following
+# Just for reference
+#
+linux> comm -13 <(sort KAG-top) <(sort KAU-top)
+GAHPAUTIZTRTMOTUJ6MPFAWFJ2SSC5S6Z5YUL7QKIUDRESKATFOZJ4HP
+GAU5CJDZXBR4JLAX6GQW6NUC5RGCTOOSIZJLJTBL6LBQ6DMZY6OWVS4O
+GAW2TKRSNRX46ILOQ3E6SVUFY5CGH2I34PLUIRQH3IXVWFJXQQKMLXIV
+GB3LQCN3D6BCXL6P46FZBRVVMV7YDBZF3MSDHOZJFMTTQ3SBDJHY5UKV
+GBBXN3CBWAFH5P46KJRERQHDNPWWJQXGZ76WF2H27EETPMMOBEUQ62NN
+GBVNQGRZYWDRBE57TU7Z62IRLFODSIFZ3WW2QQH4V4YRSGDB6AP5VNRS
+GBW4XYJPEK7CI4TSK2T56I4TOXH3ARQQXPTVNRGZEDJNEDYP4V4OMP5I
+GC22K5MZTCWOQVB5B5DR5ZSIZ4P3ZOS3KCK256F3TYJL643UDW4TXQHJ
+GCRKCT7TWFVMET5KWFOP2OHN6L57Z3U6QGXKVEULEBFE6FBUUNVEH5MA
+GDJNK7YUXVFDUI4UKE6WEHJV4WMJ3MQV7T7TLP4JCZOLCL6T7BON2A6P
+GDKKDENEIVFPGZZP6ZYE5M2I47SLIO5432QYTXLZ3C4QQJ753TFYN7GK
+
+linux> comm -23 <(sort KAG-top) <(sort KAU-top)
+GAHIR5ERN26ORNDNWUMKNAUDZQRJISSBNU76IIIEM55LIAFUXWS2TVH4
+GAXBHL4VZUVEDZLFZNZB27XSA3WKD6Z2RERRK3ZVWC7RX5I42TOF64MN
+GB572UTY2ISPYYVOPIAVYZ3Q227UMXPLVPTUZBF4J6OS7BUBIJKNAHX3
+GBPJ3A3HIH2PEUBHJC55IUSTW734EQVEMJ72A7NXY7MM5ORCWPBEGHHA
+GBPW7IJL5KRDOM5RGMKVVPO6Q6DLBAZIBXV3AB5OIXKZ5MUQC4GIRWRQ
+GBZJJ2KYXRS4XSIF4DIVZLFHACZQH4PSO43LJWEDPOF7IMPH6PWCD6KL
+GCIELRZ5HNIPNYHB3ZEFIGDO4WYB5KE2GXEE7DT6YUVEIAPDK6R2PXZN
+GCSWXZXMJAWP3MV4N6JBLGKSRXR632A5OWQXXYRWF67ZMDLMU42XJP3O
+GCZ4KXQFSANZK5PPPV2Z37O4NNQCL4XNWGM5TZSZSETSJYVR7QDVFDQU
+GDII7WVCRRPW6CFWM2UM4HJAVKI34QYDE2V625CZNGYRYPRDLGVWA4BA
+GDIPKUWTYDZKSWCQTOM7WAB74LCPK2KARNCN2B7YXGMIQ4P57QEABNQK
+
+------------------------------------------------------------
+
+
+Build a bipartite digraph
+
+E and H on one side
+The top minters on the other
+
+To simplify processing, use the first 8 characters of the 56 Stellar account address each time.
+Create DecodeTable of the format:
+
+(first 8)=(the full 56)
+
+We process on the full 56
+The First 8 are for the graphics. For display.
+
+For KAG we used
+Set-A Set-B
+Here we'll use
+Set-C Set-D
+
+
+From previous work:
+
+cat KAU-set-main-account-symbols.sh
+
+linux> cat KAU-set-main-account-symbols.sh
+KAU_EmissionAccount=GDIENNQ3BXCTB74ZYCQAGXCY7KTGFBZGHRMUVF3ZLIW6SMAZIGX2JCCS
+KAU_HotWalletAccount=GBUBOKEFUNF4ZZQA7QJCGYF54U4N2T5VV2QAN7RWQCVS75OOI5KSVCZS
+KAU_InflationAccount=GCO75U2EVO3HKGYO2PUO2ZO7CEL52JPQL5WYUHHKPEORQSASSKT4MA3B
+KAU_RootAccount=GDTYNME5HX3FCFDS4D3R3LTVH3DFLSB5HWVTV3VVL4PBGQ6SCKC7J3PD
+KAU_GAPSAccount=GAPS3KZ4YVEL4UYFAGTE6L6H6GRZ3KYBWGY2UTGTAJBXGUJLBCYQIXXA
+FeePoolAccount=GDVIVQWQIOVXP4EWQNLZHEGGLUUQALJ47HSN2MZXCEJKSSH4DBRT5BDM
+
+
+#
+# awk 'NR%2 {printf("%s\t", $0);
+# from above 
+# where \t is a neat separator
+# both "cut" and "sort" expect a tab by default
+#
+
+
+grep 'KAU_EmissionAccount\|KAU_HotWalletAccount' KAU-set-main-account-symbols.sh | cut -d= -f2 > Set-C
+head -15 KAU-minters | cut -f1 > Set-D
+
+linux> more Set-[CD]
+::::::::::::::
+Set-C
+::::::::::::::
+GDIENNQ3BXCTB74ZYCQAGXCY7KTGFBZGHRMUVF3ZLIW6SMAZIGX2JCCS
+GBUBOKEFUNF4ZZQA7QJCGYF54U4N2T5VV2QAN7RWQCVS75OOI5KSVCZS
+::::::::::::::
+Set-D
+::::::::::::::
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q
+GBBIXA2YD33DKROEKSRP5MYEGBYSUKGAUQPCFYW7HHI5NHRRNYNWSIBM
+GCPDJKTJEZZNO3FRCDQ424PZWPNJNEO7XUIPS364EZ7YKWVFBLSL5CGA
+GCRKCT7TWFVMET5KWFOP2OHN6L57Z3U6QGXKVEULEBFE6FBUUNVEH5MA
+GBW4XYJPEK7CI4TSK2T56I4TOXH3ARQQXPTVNRGZEDJNEDYP4V4OMP5I
+GAHPAUTIZTRTMOTUJ6MPFAWFJ2SSC5S6Z5YUL7QKIUDRESKATFOZJ4HP
+GBVNQGRZYWDRBE57TU7Z62IRLFODSIFZ3WW2QQH4V4YRSGDB6AP5VNRS
+GBBXN3CBWAFH5P46KJRERQHDNPWWJQXGZ76WF2H27EETPMMOBEUQ62NN
+GDEPDZCGVQ7U3337CM6QQU5GDDXMEXVM77WNLW3RFNP6JS45HVYW53AL
+GC22K5MZTCWOQVB5B5DR5ZSIZ4P3ZOS3KCK256F3TYJL643UDW4TXQHJ
+GAU5CJDZXBR4JLAX6GQW6NUC5RGCTOOSIZJLJTBL6LBQ6DMZY6OWVS4O
+GAW2TKRSNRX46ILOQ3E6SVUFY5CGH2I34PLUIRQH3IXVWFJXQQKMLXIV
+GDJNK7YUXVFDUI4UKE6WEHJV4WMJ3MQV7T7TLP4JCZOLCL6T7BON2A6P
+GDKKDENEIVFPGZZP6ZYE5M2I47SLIO5432QYTXLZ3C4QQJ753TFYN7GK
+GB3LQCN3D6BCXL6P46FZBRVVMV7YDBZF3MSDHOZJFMTTQ3SBDJHY5UKV
+
+
+
+if [ -f "DecodeTable" ]; then rm -f DecodeTable; fi; touch DecodeTable;
+
+grep 'KAU_EmissionAccount\|KAU_HotWalletAccount' KAU-set-main-account-symbols.sh | cut -d= -f2 > Set-C
+head -15 KAU-minters | cut -f1 > Set-D
+#
+grep 'KAU_EmissionAccount\|KAU_HotWalletAccount' KAU-set-main-account-symbols.sh | cut -d= -f2 | cut -c1-8 > t
+grep 'KAU_EmissionAccount\|KAU_HotWalletAccount' KAU-set-main-account-symbols.sh | cut -d= -f2 > tt
+paste -d= t tt > DecodeTable
+rm -f t tt
+#
+head -15 KAU-minters | cut -d" " -f1 | cut -c1-8 > u
+head -15 KAU-minters | cut -f1 > uu
+paste -d= u uu >> DecodeTable
+rm -f u uu
+
+nl -ba DecodeTable | sed 's/^/# /g'
+nl -ba DecodeTable | sed 's/^/# /g'
+#      1	GDIENNQ3=GDIENNQ3BXCTB74ZYCQAGXCY7KTGFBZGHRMUVF3ZLIW6SMAZIGX2JCCS
+#      2	GBUBOKEF=GBUBOKEFUNF4ZZQA7QJCGYF54U4N2T5VV2QAN7RWQCVS75OOI5KSVCZS
+#      3	GD7EOW2P=GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q
+#      4	GBBIXA2Y=GBBIXA2YD33DKROEKSRP5MYEGBYSUKGAUQPCFYW7HHI5NHRRNYNWSIBM
+#      5	GCPDJKTJ=GCPDJKTJEZZNO3FRCDQ424PZWPNJNEO7XUIPS364EZ7YKWVFBLSL5CGA
+#      6	GCRKCT7T=GCRKCT7TWFVMET5KWFOP2OHN6L57Z3U6QGXKVEULEBFE6FBUUNVEH5MA
+#      7	GBW4XYJP=GBW4XYJPEK7CI4TSK2T56I4TOXH3ARQQXPTVNRGZEDJNEDYP4V4OMP5I
+#      8	GAHPAUTI=GAHPAUTIZTRTMOTUJ6MPFAWFJ2SSC5S6Z5YUL7QKIUDRESKATFOZJ4HP
+#      9	GBVNQGRZ=GBVNQGRZYWDRBE57TU7Z62IRLFODSIFZ3WW2QQH4V4YRSGDB6AP5VNRS
+#     10	GBBXN3CB=GBBXN3CBWAFH5P46KJRERQHDNPWWJQXGZ76WF2H27EETPMMOBEUQ62NN
+#     11	GDEPDZCG=GDEPDZCGVQ7U3337CM6QQU5GDDXMEXVM77WNLW3RFNP6JS45HVYW53AL
+#     12	GC22K5MZ=GC22K5MZTCWOQVB5B5DR5ZSIZ4P3ZOS3KCK256F3TYJL643UDW4TXQHJ
+#     13	GAU5CJDZ=GAU5CJDZXBR4JLAX6GQW6NUC5RGCTOOSIZJLJTBL6LBQ6DMZY6OWVS4O
+#     14	GAW2TKRS=GAW2TKRSNRX46ILOQ3E6SVUFY5CGH2I34PLUIRQH3IXVWFJXQQKMLXIV
+#     15	GDJNK7YU=GDJNK7YUXVFDUI4UKE6WEHJV4WMJ3MQV7T7TLP4JCZOLCL6T7BON2A6P
+#     16	GDKKDENE=GDKKDENEIVFPGZZP6ZYE5M2I47SLIO5432QYTXLZ3C4QQJ753TFYN7GK
+#     17	GB3LQCN3=GB3LQCN3D6BCXL6P46FZBRVVMV7YDBZF3MSDHOZJFMTTQ3SBDJHY5UKV
+
+
+
+
+time ./build-dot-file-4-bipartite-digraph.sh $KAU_extract TYPE0-11-8-10 TYPE1-13-14-15 Set-C Set-D DecodeTable
+
+
+linux> time ./build-dot-file-4-bipartite-digraph.sh $KAU_extract TYPE0-11-8-10 TYPE1-13-14-15 Set-C Set-D DecodeTable
+Parameters
+./build-dot-file-4-bipartite-digraph.sh
+../dat/kau-stellar-export-2023-07-23-T13:36:43-UTC.csv
+TYPE0-11-8-10
+TYPE1-13-14-15
+Set-C
+Set-D
+DecodeTable
+Graphviz-2023-07-25-T15:59:00-UTC.png
+Graphviz-2023-07-25-T15:59:00-UTC.dot
+
+real	0m42.390s
+user	0m52.375s
+sys	0m5.250s
+
+linux> more Graphviz-2023-07-25-T15:59:00-UTC.dot
+digraph {
+rankdir="LR"
+GDIENNQ3->GD7EOW2P [label =   20675400 color="orange"]
+GDIENNQ3->GBBIXA2Y [label =    3071800 color="orange"]
+GDIENNQ3->GCPDJKTJ [label =    2581200 color="orange"]
+GDIENNQ3->GCRKCT7T [label =    1242600 color="orange"]
+GDIENNQ3->GBW4XYJP [label =    1151800 color="orange"]
+GDIENNQ3->GAHPAUTI [label =    1096900 color="orange"]
+GDIENNQ3->GBVNQGRZ [label =    1092200 color="orange"]
+GDIENNQ3->GBBXN3CB [label =    1001000 color="orange"]
+GDIENNQ3->GDEPDZCG [label =     832400 color="orange"]
+GDIENNQ3->GC22K5MZ [label =     669800 color="orange"]
+GDIENNQ3->GAU5CJDZ [label =     636800 color="orange"]
+GDIENNQ3->GAW2TKRS [label =     572500 color="orange"]
+GDIENNQ3->GDJNK7YU [label =     531285 color="orange"]
+GDIENNQ3->GDKKDENE [label =     439300 color="orange"]
+GDIENNQ3->GB3LQCN3 [label =     387200 color="orange"]
+GBUBOKEF->GBBIXA2Y [label =        857 color="orange"]
+GBUBOKEF->GCPDJKTJ [label =       7120 color="orange"]
+GBUBOKEF->GCRKCT7T [label =      10791 color="orange"]
+GBUBOKEF->GBVNQGRZ [label =        458 color="orange"]
+GBUBOKEF->GBBXN3CB [label =       8132 color="orange"]
+GBUBOKEF->GDEPDZCG [label =      51295 color="orange"]
+GBUBOKEF->GC22K5MZ [label =       2302 color="orange"]
+GBUBOKEF->GAW2TKRS [label =       1664 color="orange"]
+GBUBOKEF->GDJNK7YU [label =         42 color="orange"]
+GBUBOKEF->GB3LQCN3 [label =        189 color="orange"]
+GDIENNQ3->GD7EOW2P [label =      30000 color="blue"]
+GDIENNQ3->GBBIXA2Y [label =       3500 color="blue"]
+GDIENNQ3->GBW4XYJP [label =     680700 color="blue"]
+GDIENNQ3->GBVNQGRZ [label =       3300 color="blue"]
+GDIENNQ3->GBBXN3CB [label =        900 color="blue"]
+GDIENNQ3->GDEPDZCG [label =       8700 color="blue"]
+GDIENNQ3->GC22K5MZ [label =       6900 color="blue"]
+GDIENNQ3->GAU5CJDZ [label =       1000 color="blue"]
+GDIENNQ3->GAW2TKRS [label =      10500 color="blue"]
+GDIENNQ3->GB3LQCN3 [label =       3400 color="blue"]
+GBUBOKEF->GDEPDZCG [label =        757 color="blue"]
+}
+
+
+
+------------------------------------------
+KAG and KAU
+------------------------------------------
+
+How to represent tripartite graph in dot / GraphViz ?
+
+K p,q,r
+K (2, O(15+15), 2)
+
+
+https://en.wikipedia.org/wiki/Multipartite_graph
+
+In graph theory, a part of mathematics, a k-partite graph is a graph whose vertices are (or can be) partitioned into k different independent sets. Equivalently, it is a graph that can be colored with k colors, so that no two endpoints of an edge have the same color. When k = 2 these are the bipartite graphs, and when k = 3 they are called the tripartite graphs.
+
+
+https://graphs.grevian.org/example
+
+"same"
+   { rank="same"; b, c, d }
+   { rank="same"; e, f, g }
+https://graphs.grevian.org/example
+no ""
+Oh...
+
+
+could be worthwhile
+
+  {rank=same; GCGTMT2X,GBTYCT2V}
+  {rank=same; GDIENNQ3,GBUBOKEF}
+
+Both with 15 vertices
+Some may be same
+
+
+KAG
+Graphviz-2023-07-23-T15:26:04-UTC.dot
+
+KAU
+Graphviz-2023-07-23-T18:05:38-UTC.dot
+
+
+#
+# backslash at EOL for line continuation works
+#
+./build-dot-file-4-tripartite-digraph-with-KAG-and-KAU-bipartite-dots-as-input.sh \
+Graphviz-2023-07-25-T11:55:39-UTC.dot \
+Graphviz-2023-07-25-T15:59:00-UTC.dot
+
+
+KAG_outputfile--2023-07-25-T10:50:53-UTC
+outputfile-2023-07-25-T11:55:29-UTC-TYPE0
+outputfile-2023-07-25-T11:55:39-UTC-TYPE1
+Graphviz-2023-07-25-T11:55:39-UTC.dot
+Graphviz-2023-07-25-T11:55:39-UTC.png
+KAG_outputfile-2023-07-25-T12:24:43-UTC
+KAG-minters
+
+KAU_outputfile-2023-07-25-T15:23:49-UTC
+KAU_outputfile-2023-07-25-T15:36:56-UTC
+KAU-minters
+outputfile-2023-07-25-T15:58:36-UTC-TYPE0
+outputfile-2023-07-25-T15:59:00-UTC-TYPE1
+Graphviz-2023-07-25-T15:59:00-UTC.dot
+Graphviz-2023-07-25-T15:59:00-UTC.png
+
+build-dot-file-4-tripartite-digraph-with-KAG-and-KAU-bipartite-dots-as-input.sh
+'How to build bipartite-digraphs for KAG then KAU then tripartite digraph with both together.notes'
+
+Graphviz-2023-07-25-T17:04:48-UTC-tripartite.dot
+Graphviz-2023-07-25-T17:04:48-UTC-tripartite.png
+
+
+
+-------------
+
+The interested reader can compare the results above with the Sankey diagrams by CRYPTO INFORMER from 6.5 months ago here:
+https://cryptoinformer.substack.com/p/the-kinesis-monetary-system-mint?utm_source=profile&utm_medium=reader2
+
+Sankey_diagram
+https://en.wikipedia.org/wiki/Sankey_diagram#References
+
+It is conceivable CI did not know at the time that 
+flow(H-E) = redemptions
+
+We are working with a system that has well-nigh non-existent written documentation.
+
+-------------
+
+A quick skim over minting activity of Top Dog
+
+GD7EOW2P
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q
+
+
+linux> KAG_extract=../dat/kag-stellar-export-2023-07-23-T13\:29\:49-UTC.csv 
+linux> KAU_extract=../dat/kau-stellar-export-2023-07-23-T13\:36\:43-UTC.csv 
+
+
+linux> grep GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q KAG-minters 
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q	595600.00 
+linux> grep GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q KAU-minters 
+GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q	20675400.00
+
+
+KAG
+
+linux> grep GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q $KAG_extract | cut -d, -f6 | sed 's/"//g' | cut -c1-10 | sort -u
+2021-02-17
+2021-02-18
+2021-02-22
+2021-02-23
+2021-02-25
+2021-02-26
+2021-03-01
+2021-05-14
+2021-09-07
+2022-01-09
+2022-01-11
+
+linux> ncal -w -A 11 2 2021
+
+linux> ncal -w -A 11 2 2021
+    Februar 2021      März 2021         April 2021        Mai 2021          
+Mo  1  8 15 22        1  8 15 22 29        5 12 19 26        3 10 17 24 31
+Di  2  9 16 23        2  9 16 23 30        6 13 20 27        4 11 18 25   
+Mi  3 10 17 24        3 10 17 24 31        7 14 21 28        5 12 19 26   
+Do  4 11 18 25        4 11 18 25        1  8 15 22 29        6 13 20 27   
+Fr  5 12 19 26        5 12 19 26        2  9 16 23 30        7 14 21 28   
+Sa  6 13 20 27        6 13 20 27        3 10 17 24        1  8 15 22 29   
+So  7 14 21 28        7 14 21 28        4 11 18 25        2  9 16 23 30   
+    5  6  7  8        9 10 11 12 13    13 14 15 16 17    17 18 19 20 21 22
+
+    Juni 2021         Juli 2021         August 2021       September 2021    
+Mo     7 14 21 28        5 12 19 26        2  9 16 23 30     6 13 20 27   
+Di  1  8 15 22 29        6 13 20 27        3 10 17 24 31     7 14 21 28   
+Mi  2  9 16 23 30        7 14 21 28        4 11 18 25     1  8 15 22 29   
+Do  3 10 17 24        1  8 15 22 29        5 12 19 26     2  9 16 23 30   
+Fr  4 11 18 25        2  9 16 23 30        6 13 20 27     3 10 17 24      
+Sa  5 12 19 26        3 10 17 24 31        7 14 21 28     4 11 18 25      
+So  6 13 20 27        4 11 18 25        1  8 15 22 29     5 12 19 26      
+   22 23 24 25 26    26 27 28 29 30    30 31 32 33 34 35 35 36 37 38 39   
+
+    Oktober 2021      November 2021     Dezember 2021     Januar 2022       
+Mo     4 11 18 25     1  8 15 22 29        6 13 20 27        3 10 17 24 31
+Di     5 12 19 26     2  9 16 23 30        7 14 21 28        4 11 18 25   
+Mi     6 13 20 27     3 10 17 24        1  8 15 22 29        5 12 19 26   
+Do     7 14 21 28     4 11 18 25        2  9 16 23 30        6 13 20 27   
+Fr  1  8 15 22 29     5 12 19 26        3 10 17 24 31        7 14 21 28   
+Sa  2  9 16 23 30     6 13 20 27        4 11 18 25        1  8 15 22 29   
+So  3 10 17 24 31     7 14 21 28        5 12 19 26        2  9 16 23 30   
+   39 40 41 42 43    44 45 46 47 48    48 49 50 51 52    52  1  2  3  4  5
+
+Active over 11 months
+
+KAU
+
+linux> grep GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q $KAU_extract | cut -d, -f6 | sed 's/"//g' | cut -c1-10 | sort -u
+2021-02-18
+2021-02-19
+2021-02-22
+2021-02-23
+2021-02-24
+2021-02-25
+2021-02-26
+2021-03-01
+2021-03-02
+2021-03-03
+2021-04-27
+2021-04-28
+2021-04-29
+2021-04-30
+2021-05-13
+2021-05-18
+2021-05-19
+2021-05-20
+2021-05-21
+
+Active over 13 weeks:
+
+linux> ncal -w -A 3 2 2021
+    Februar 2021      März 2021         April 2021        Mai 2021          
+Mo  1  8 15 22        1  8 15 22 29        5 12 19 26        3 10 17 24 31
+Di  2  9 16 23        2  9 16 23 30        6 13 20 27        4 11 18 25   
+Mi  3 10 17 24        3 10 17 24 31        7 14 21 28        5 12 19 26   
+Do  4 11 18 25        4 11 18 25        1  8 15 22 29        6 13 20 27   
+Fr  5 12 19 26        5 12 19 26        2  9 16 23 30        7 14 21 28   
+Sa  6 13 20 27        6 13 20 27        3 10 17 24        1  8 15 22 29   
+So  7 14 21 28        7 14 21 28        4 11 18 25        2  9 16 23 30   
+    5  6  7  8        9 10 11 12 13    13 14 15 16 17    17 18 19 20 21 22
+
+https://explorer.kinesis.money/account/GD7EOW2PIT4YPLBAP3O4SXKVA5PSRRJKYDO5IXNQDASXPKGCHZJ2TX2Q
+
+Current balances of that account:
+KAU
+0.0
+KAG
+0.0
+
+not active since those dates apparently
+
+Is it feasible to open another completely different account at Kinesis?
+Then transfer all assets to the new account?
+
+Something for a Digital Auditor to investigate.
+There may be legitimate rasons for doing so.
+To minimize the risk of doxxing for example.
+
+Perhaps all holdings were moved to a Cold Wallet Off-chain
+
+
+------------------------------------------------------------------------------------
+
+
