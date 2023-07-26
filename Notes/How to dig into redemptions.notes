@@ -1,0 +1,192 @@
+
+
+A Kinesis beginner may think that a payment transaction in 
+https://explorer.kinesis.money/
+represents a user buying metal/ digital tokens.
+
+In many cases those payments are redemptions.
+Let's revisit those again.
+Just for fun.
+
+
+
+Following-up on 2 posts:
+
+
+https://forum.kinesis.money/threads/forensics-a-quick-look-at-frequency-and-size-of-redemptions-kag.1735/
+https://forum.kinesis.money/threads/forensics-frequency-and-size-of-redemptions-kau.1736/
+
+
+KAG then KAU
+
+[Forensics] A quick look at frequency and size of redemptions (KAG)
+[Forensics] Frequency and size of redemptions (KAU)
+
+
+
+
+Pace of redemptions
+
+A redemption is a system event.
+Probably initiated by the Market Maker at Kinesis KMS.
+
+To balance the books between:
+
+physical inventory (stocks spread across vaults)
+digital tokens in circulation
+
+
+
+
+
+#
+# I just did another extract from Watcher node
+# https://watcher.aboutkinesis.com/operations
+#
+
+mv ../dat/stellar-export.csv ../dat/kag-stellar-export`date -u +"-%Y-%m-%d-T%T-%Z"`.csv
+mv ../dat/stellar-export.csv ../dat/kau-stellar-export`date -u +"-%Y-%m-%d-T%T-%Z"`.csv
+
+linux> KAG_extract=../dat/kag-stellar-export-2023-07-26-T13\:02\:13-UTC.csv 
+linux> KAU_extract=../dat/kau-stellar-export-2023-07-26-T13\:09\:16-UTC.csv 
+
+
+
+#
+# Check input format as always
+#
+
+head -1 $KAG_extract | sed 's/,/\n/g' | nl -ba > KAG_header
+for i in `cat RequiredFields-Type1`; do grep -w $i KAG_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+
+# TYPE1-13-14-15-6-7-4-5
+
+head -1 $KAU_extract | sed 's/,/\n/g' | nl -ba > KAU_header
+for i in `cat RequiredFields-Type1`; do grep -w $i KAU_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+
+# TYPE1-13-14-15-6-7-4-5
+
+#
+# Both have same structure today.
+# This format *was* different 10 days ago
+#
+# Off we go
+# 
+
+
+# KAG
+
+KAG_EmissionAccount=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+KAG_HotWalletAccount=GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {print $0}' | more
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | wc -l
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | wc -l
+467
+
+
+#
+# list unique dates
+#
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | cut -c1-10 | sort -u | more
+
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | cut -c1-10 | sort -u | wc -l
+303
+
+Different days
+Thus some days have multiple redemptions
+
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | cut -c1-10 | sort -u | more
+
+
+# KAU
+
+KAU_EmissionAccount=GDIENNQ3BXCTB74ZYCQAGXCY7KTGFBZGHRMUVF3ZLIW6SMAZIGX2JCCS
+KAU_HotWalletAccount=GBUBOKEFUNF4ZZQA7QJCGYF54U4N2T5VV2QAN7RWQCVS75OOI5KSVCZS
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v e=$KAU_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {print $0}' | more
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v e=$KAU_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {print $0}' | wc -l
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v e=$KAU_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {print $0}' | wc -l
+3103
+
+#
+# about 10 times more than for KAG
+# more mint-cycling on the KAU side ?
+#
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v e=$KAU_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | cut -c1-10 | sort -u | more
+
+linux>  sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v e=$KAU_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | cut -c1-10 | sort -u | wc -l
+674
+
+redemptions made on 674 different dates
+
+
+
+#
+# 10 days ago:
+#
+
+Values when I posted last?
+
+
+
+KAG redemptions then:
+
+tmp=../dat/kag-stellar-export-2023-06-17-T01:34:31-UTC.csv
+linux> sed '1d' $tmp | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | wc -l
+464
+
+
+KAG redemptions now:
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v e=$KAG_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {printf "%s\n", $6}' | wc -l
+467
+
+bc <<< "467 - 464"
+linux> bc <<< "467 - 464"
+3
+
+
+
+KAU redemptions then:
+
+linux> echo $KAU_extract 
+../dat/kau-stellar-export-2023-06-17-T01:32:07-UTC.csv
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v x=$KAU_HotWalletAccount -v y=$KAU_EmissionAccount '( ($4=="payment") && (($9==x) && ($10==y)) ) {printf "%s\t%10.2f\t%s\n", $6, $11, $7}' | sort -k1 | wc -l
+3051
+
+Check can reproduce result:
+
+tmp2=../dat/kau-stellar-export-2023-06-17-T01:32:07-UTC.csv
+sed '1d' $tmp2 | sed 's/\"//g' | awk -F, -v x=$KAU_HotWalletAccount -v y=$KAU_EmissionAccount '( ($4=="payment") && (($9==x) && ($10==y)) ) {printf "%s\t%10.2f\t%s\n", $6, $11, $7}' | sort -k1 | wc -l
+
+linux> tmp2=../dat/kau-stellar-export-2023-06-17-T01:32:07-UTC.csv
+sed '1d' $tmp2 | sed 's/\"//g' | awk -F, -v x=$KAU_HotWalletAccount -v y=$KAU_EmissionAccount '( ($4=="payment") && (($9==x) && ($10==y)) ) {printf "%s\t%10.2f\t%s\n", $6, $11, $7}' | sort -k1 | wc -l
+3051
+
+Jawohl
+
+
+
+KAU redemptions now:
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v e=$KAU_EmissionAccount '( ($5=="1") && (($13==h) && ($14==e)) ) {print $0}' | wc -l
+3103
+
+bc <<< "3103 - 3051"
+linux> bc <<< "3103 - 3051"
+52
+
+#
+#
+# different fields because the format of the Watcher CSV extract file varies over time.
+# Tricky but we can get used to it if manic enough.
+#
+#
+
+----------------------------------------------------
+
+
