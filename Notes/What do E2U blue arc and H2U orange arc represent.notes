@@ -1,0 +1,730 @@
+
+
+What do E2U blue arc and H2U orange arc represent ?
+
+
+https://forum.kinesis.money/threads/forensics-kag-flow-graph-corrected.1796/
+
+------------------
+
+3 vertices
+
+E
+H
+U
+
+Emission (aka The Mint)
+HotWallet
+Users
+
+4 arcs
+
+1)
+E2U blue
+2)
+E2U orange
+3)
+H2E blue
+4)
+H2U orange
+
+A picture of simplicity. Right?
+
+Reminder:
+
+Stellar "create_account" = Type0 = orange
+Stellar "payment" = Type1 = blue
+
+------------------
+
+1) we figure out below by inspection
+2) and 3) we have examined a great deal over the last few weeks in this forum and at github
+4) is still a mystery to me
+
+
+1)
+mint straight to cold wallet
+2)
+mint  from fiat
+mint from metal. EPD (Exchange Physical for Digital)
+3)
+redemption by Market Maker to maintain 1:1 (physical:digital) ratio
+redemption to physical (user driven) [hypothetical. Not yet tested. No idea how to test]
+
+My wild guesses about 4):
+
+H2U orange
+I hypothesize H2U orange (4) are user *transfers* to cold wallet
+By default, user stocks of KAG or KAU are held in one pool at H HotWallet.
+
+
+Perhaps if I list transactions for 1) and 4) at github under notes, somebody here on forum can clarify what these flows actually are.
+-------
+WARNING
+-------
+If anybody does recognise their own transactions here, please do not advertise date, nor amount. It is extremely easy to dox yourself inadvertently in a blockchain  system.
+
+
+
+Full discussion. Code and output at github here
+
+[SNIP] all below. To github.
+
+
+------------------
+Get ready for work
+------------------
+
+KAG_extract=../dat/kag-stellar-export-2023-07-26-T13:02:13-UTC.csv
+KAU_extract=../dat/kau-stellar-export-2023-07-26-T13:09:16-UTC.csv
+
+echo $KAG_extract
+echo $KAU_extract
+
+# ../dat/kag-stellar-export-2023-07-26-T13:02:13-UTC.csv
+# ../dat/kau-stellar-export-2023-07-26-T13:09:16-UTC.csv
+
+. ./KAG-set-main-account-symbols.sh 
+. ./KAU-set-main-account-symbols.sh 
+
+head -1 $KAG_extract | sed 's/,/\n/g' | nl -ba > KAG_header
+for i in `cat RequiredFields-Type0`; do grep -w $i KAG_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE0-/'
+for i in `cat RequiredFields-Type1`; do grep -w $i KAG_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+
+# TYPE0-11-8-10-6-7-4-5
+# TYPE1-13-14-15-6-7-4-5
+
+
+head -1 $KAU_extract | sed 's/,/\n/g' | nl -ba > KAU_header
+for i in `cat RequiredFields-Type0`; do grep -w $i KAU_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE0-/'
+for i in `cat RequiredFields-Type1`; do grep -w $i KAU_header; done | cut -f1 | paste -s | column -t | tr -s " " | sed 's/ /-/g' | sed 's/^/TYPE1-/'
+
+# TYPE0-11-8-10-6-7-4-5
+# TYPE1-13-14-15-6-7-4-5
+
+# Same format today across KAG, KAU
+
+
+For reference, from previous work:
+
+KAG:
+Graphviz-2023-07-12-T13:46:13-UTC-simplified.png
+KAU:
+Graphviz-2023-07-12-T13:50:45-UTC-simplified.png
+
+----------------------------------
+
+Tech note:
+----------
+At times I get a little confused with date sorts.
+This is usually because my terminators are too vague ("\t" not enough; do spaces then -b on the sort)
+sort --debug
+is of some help here
+
+--------------------------
+
+
+-----------------
+Work KAG
+-----------------
+
+1) and 4) are around 1 million KAG
+
+
+--------------------------------
+1)
+E2U blue
+TYPE1-13-14-15-6-7-4-5
+--------------------------------
+
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a)) {printf "%s\t%s\t%10.2f\n", $6, $14, $15}' | sort -k2 -k1 -k3 | wc -l
+# 1391
+# number of flows over this arc
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a)) {printf "%s\t%s\t%10.2f\n", $6, $14, $15}' | sort -k2 -k1 -k3 | cut -f3 | paste -s -d+ | bc -l
+1270938.06
+#
+# sum of flows over this one arc
+#
+# higher than in diagram (127* not 1239738)
+# Graphviz-2023-07-12-T13:46:13-UTC-simplified.png
+#
+# We're working on more recent data
+#
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '( ($5=="1") && ($13==e) ) {printf "%s\n", $14}' | sort -u | wc -l
+256
+unique addresses
+
+# Write those out to a file
+#
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v x=$KAG_EmissionAccount '( ($5=="1") && ($13==x) ) {printf "%s\n", $14}' | sort -u > KAG-E2U-blue-users
+
+wc -l KAG-E2U-blue-users 
+# 256 KAG-E2U-blue-users
+
+
+# content of flows:
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v x=$KAG_EmissionAccount '( ($5=="1") && ($13==x) ) {printf "%s\t%10.2f\n", $6, $15}' | sort -n -k1 | more
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '( ($5=="1") && ($13==e) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -k1 -k2 --debug | more
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '( ($5=="1") && ($13==e) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | head 
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2019-07-01T03:15:39Z    1400.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2019-09-18T17:29:55Z     200.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2019-09-18T19:39:31Z     200.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2019-12-03T03:10:58Z     600.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2019-12-17T14:03:43Z     600.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2019-12-17T14:08:03Z     400.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2020-02-26T13:09:48Z    1400.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2020-07-14T12:43:16Z     200.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2020-08-05T11:52:36Z    1000.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2020-08-27T12:51:11Z     800.00
+
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '( ($5=="1") && ($13==e) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | grep '\bGA4CJ' | head 
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount '( ($5=="1") && ($13==e) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | grep '\bGA4CJ' | head -40
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2019-08-06T15:04:49Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2019-11-05T04:38:13Z     400.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2019-11-11T18:51:36Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2020-03-03T04:54:03Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2020-07-27T10:36:35Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2020-08-05T04:17:15Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2020-09-11T08:49:57Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2020-09-28T15:26:42Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2020-10-20T06:18:33Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2020-12-07T05:59:48Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2021-09-27T04:53:30Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2021-11-15T10:48:43Z     200.00
+GA4CJ4RVOXBAGHJR4M7IE2QYO7UMRW37NEERZLWE32TJE3QCLRUSHVRG 2022-07-25T13:37:54Z     200.00
+
+# a hunch............
+# records that are *not* multiples of 200
+#
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a) && ($15 % 200) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 
+GALPMJWGL3VFO3WJ6LZ77OEDDJQ2PTE334EHAULHHIQC43BJH54SE6FD 2019-04-01T12:45:47Z      32.15
+GAMRN55M7TFMAVLHOF4436YFWS72KOP7TQDTEXPELK5NAEY3BC6XW3BU 2019-06-19T03:57:49Z     500.00
+GAOO4W4NHRSUVFPCVUA2BZTAMCJ6O7MBMXMDMUL6XEQ7Q6DBT6UTFD7V 2019-05-01T07:06:58Z     100.00
+GAOO4W4NHRSUVFPCVUA2BZTAMCJ6O7MBMXMDMUL6XEQ7Q6DBT6UTFD7V 2019-05-01T07:14:07Z     100.00
+GAQJIPG6HH46SNFMNK6BVVH6MW6IMDWU5MSTEPXI4RWVGBTZ526WWKAM 2021-03-03T00:26:38Z     482.26
+GAQJIPG6HH46SNFMNK6BVVH6MW6IMDWU5MSTEPXI4RWVGBTZ526WWKAM 2021-03-03T00:29:18Z     482.26
+GAVY4CJW5MUTESUCFXRHU3ZPZYZCY2K6OCRIZQGXJRTKPMUATE5OBU7U 2019-09-09T05:02:45Z     100.00
+GB6ZZMIBRO6RQVOCPABHNVEURN3H6VINUB2MTKZV2BJVWP5WFDBWED54 2019-10-01T03:36:12Z      21.28
+GB6ZZMIBRO6RQVOCPABHNVEURN3H6VINUB2MTKZV2BJVWP5WFDBWED54 2019-10-04T05:44:13Z     100.00
+GBCUEOMZ7HAXKWMKPFCFS5QBGX456HTTZ4IYDIBGKY5S3QHLBCBDHBVB 2019-04-29T07:43:42Z      64.30
+GBCUEOMZ7HAXKWMKPFCFS5QBGX456HTTZ4IYDIBGKY5S3QHLBCBDHBVB 2019-04-29T07:48:17Z      32.15
+GBL7HPYUPRSMP4M5CDJGLDF6XZXNYVPLY3I35VQ2T3U624LKGEVDSYCP 2019-05-07T05:32:13Z     739.47
+GC64GKG6KYN5EZDYMOSJKZ3BYMN5EIDENCNLJSN2SFWMG7OA3BAQKWP5 2022-03-25T02:16:16Z    3761.67
+GCNL2XTAOT47QHYJ4EJHKVKDUBWI35EF4G7APGD2PAATXHTABKEEGRE2 2019-08-21T09:57:05Z    5900.00
+GDHS6ESCBI4O6FUV343SPLBTFBDRNZ6PBYQMDC7XQCFJSGAE2PKOVB6M 2019-05-14T04:56:43Z      32.15
+GDKTRWZO32KOGGC6NJ4R32BBMZVK2GMCVOVOQP3MTQSNJDS3DEH7THDH 2019-09-18T05:43:26Z     257.21
+GDPWZC6EDJ4QN4VQBVRPJFE6DCG5HXH2M7APH5YRH24HKS6O5F72RUH4 2019-09-03T08:00:45Z   52984.85
+GDPWZC6EDJ4QN4VQBVRPJFE6DCG5HXH2M7APH5YRH24HKS6O5F72RUH4 2019-09-03T08:21:05Z   69124.65
+GDYYWXS5P6AGHT7AK667KGPUPYXLDMMTS6RCVQSMABMCDS55GI64XX24 2023-04-12T23:27:55Z   22923.66
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a) && ($15 % 200) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 | wc -l
+19
+
+19 outliers
+
+
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a) && ($15 % 200) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 | cut -c80-
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a) && ($15 % 200) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 | cut -c80- > t
+
+#
+# the round numbers are clearly likely multiples of ozt as unit
+#
+# Use simple trick used countless times before
+# to find non-round numbers
+#
+
+linux> grep -v \0.00 t > tt
+
+linux> grep -v \0.00 t | nl -ba
+     1	    32.15
+     2	   482.26
+     3	   482.26
+     4	    21.28
+     5	    64.30
+     6	    32.15
+     7	   739.47
+     8	  3761.67
+     9	    32.15
+    10	   257.21
+    11	 52984.85
+    12	 69124.65
+    13	 22923.66
+
+#
+# explode those out into kg from ozt
+#
+linux> for i in `cat tt`; do  units -o "%-6.2f" -t "$i ozt" kg; done
+1.00  
+15.00 
+15.00 
+0.66  
+2.00  
+1.00  
+23.00 
+117.00
+1.00  
+8.00  
+1648.01
+2150.02
+713.01
+
+#
+# the round numbers here clearly have something to do with kg rather than ozt
+#
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a) && !($15 % 200) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -b -k1 -b -k2 | wc -l
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_EmissionAccount '( ($5=="1") && ($13==a) && !($15 % 200) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -b -k1 -b -k2 | wc -l
+1372
+
+
+The vast bulk *are* multiples of 200
+1372 of 1391
+
+Of the 19 outliers, 13 were not round numbers.
+9 of those 13 were likely kgs
+6 of the 19 were round multiples of 100 ozt but not of 200 ozt
+Those occurred in 2019. At the beginning of the system.
+19 - 9 - 6 = 4 actual outliers
+
+Suggestion:
+Those 4 could be followed up by the Digital Auditor.
+Just kidding...
+
+
+Thus we can say with some confidence this "E2U blue" arc carries users minting straight to cold wallets.
+
+
+
+--------------------------------
+4) (sic)
+H2U orange
+TYPE0-11-8-10-6-7-4-5
+--------------------------------
+
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_HotWalletAccount '( ($5=="0") && ($11==a)) {printf "%s\t%s\t%10.2f\n", $6, $8, $10}' | sort -k2 -k1
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_HotWalletAccount '( ($5=="0") && ($11==a)) {printf "%s\t%s\t%10.2f\n", $6, $8, $10}' | sort -k2 -k1 | wc -l
+4416
+flows
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_HotWalletAccount '( ($5=="0") && ($11==a)) {printf "%s\t%s\t%10.2f\n", $6, $8, $10}' | cut -f3 | paste -s -d+ | bc -l
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v a=$KAG_HotWalletAccount '( ($5=="0") && ($11==a)) {printf "%s\t%s\t%10.2f\n", $6, $8, $10}' | cut -f3 | paste -s -d+ | bc -l
+1012800.11
+Graphviz-2023-07-12-T13:46:13-UTC-simplified.png
+
+not same
+Must exclude H2F flow
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%-10.2f\n", $10}' | paste -s -d+ | bc -l
+987089.08
+
+OK not identical to diagram but I'm working on a slightly more up-to-date CSV input file
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s\n", $8}' | sort -u | wc -l
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s\n", $8}' | sort -u | wc -l
+1907
+
+Write out to file
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s\n", $8}' | sort -u > KAG-H2U-orange-users
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s\n", $8}' | sort -u > KAG-H2U-orange-users
+
+linux> wc -l *users
+   256 KAG-E2U-blue-users
+  1907 KAG-H2U-orange-users
+
+
+linux> comm -12 KAG-E2U-blue-users KAG-H2U-orange-users | wc -l
+39
+common to both sets
+
+
+# look at the actual data:
+#
+#
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s %10.2f %s\n", $8, $10, $6}' | sort -t" " -k1 -k3 | more
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s %10.2f %s\n", $8, $10, $6}' | sort -t" " -k1 -k3 | head -15
+GA226R7F6LUWDHSGOJLECZHEI6W6KBCI3FK2ELOM2MKWBNI5DVNGJZ7B       1.00 2023-01-13T13:12:46Z
+GA22UCTKRM6H3S7J4IYKEDEOMO2CYWTRTC4AONYYKXBALAWSL33A4BT3      14.93 2021-06-04T23:32:46Z
+GA22UCTKRM6H3S7J4IYKEDEOMO2CYWTRTC4AONYYKXBALAWSL33A4BT3      23.60 2021-10-21T15:16:33Z
+GA23DUU235365CXKBW3L3VWRGYOHBQ3OYGNO53VSKEUTTGMSCUR5JYUY       0.50 2023-02-02T22:20:10Z
+GA23RHFYCQWDBAYMS3I3A3XA25YGBH5KJYO6E754B6BQ6UTR7PBYJDSU     284.58 2019-11-12T10:11:22Z
+GA2BTSKBBIEG2PMJF44VM7HCC7UTBDNM352FDHATYD52IKQEYBNAPW34     332.90 2023-07-01T01:27:37Z
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65       0.50 2022-04-28T17:08:47Z
+GA2HH7JDUAQUBDUUSWJPZQQH4S6DQLSRRCG7J6P3REKCNBY6SAP3FA5D       0.25 2021-05-16T10:47:53Z
+GA2I7ZYBEG3WSRWZOPMPHSU7UZLANFWKBDLN5ZB562CEVY6FZYQUUT63      50.00 2022-11-28T14:37:30Z
+GA2LDVTWX5Y2T3YMU2EPMA3OGIRG3GAS56JYH7PG2TDQP57M6NIZ3IYC       1.00 2022-02-11T15:47:36Z
+GA2LDVTWX5Y2T3YMU2EPMA3OGIRG3GAS56JYH7PG2TDQP57M6NIZ3IYC       3.00 2022-09-30T10:53:40Z
+GA2LV3T56G46MKMJDXUZW6CYMSC7YN6RMM4S57Y5FOQYAC2ZL4CWMSZC       1.33 2019-12-06T08:00:48Z
+GA2NFBDEOQU3XKU3QTLEL2GUOGKA7YKMI6JJKQOZU7AKW55KBYDU7BOF      10.53 2022-07-22T07:41:13Z
+GA2OPY732EGU4YTTLD3ZBWDZHY4P4RGGF5VKG5IBUXHCLPEASB3GCYI6       1.00 2022-09-16T18:14:21Z
+GA2OPY732EGU4YTTLD3ZBWDZHY4P4RGGF5VKG5IBUXHCLPEASB3GCYI6       1.00 2022-11-07T14:26:20Z
+
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s %s %10.2f\n", $8, $6, $10 }' | sort -t" " -b -k1 -b -k3 | grep '\bGAGHM6'
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v h=$KAG_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s %s %10.2f\n", $8, $6, $10 }' | sort -t" " -b -k1 -b -k3 | grep '\bGAGHM6'
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-16T16:26:18Z      28.87
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-18T15:42:17Z      59.73
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-18T15:56:24Z      59.73
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-18T21:24:32Z      58.04
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-20T20:09:42Z       2.19
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-22T15:10:02Z      56.10
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-23T00:18:04Z     217.02
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-02-26T18:43:53Z      59.73
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-01T17:33:47Z     297.01
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-02T19:41:26Z      33.22
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-03T23:36:18Z     203.22
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-03T23:52:23Z     176.06
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-04T07:33:27Z     134.79
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-12T18:01:47Z      37.90
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-18T15:08:39Z     147.39
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-03-23T05:04:42Z     147.85
+GAGHM6SB3GVVGSRHFRHLRRMBR3QEZQU3OKGX4GHXYNX7K2QDUG6EQLXJ 2021-05-31T14:37:05Z      37.00
+
+# what does this all represent?
+# no idea
+# we're just clearing the way here. So that someone can say ha! that's this
+#
+
+
+
+
+
+
+-----------------
+Work KAU
+-----------------
+
+1) and 4) total flows seem completely unrelated
+
+3.1 M KAU versus 
+300 K KAU
+
+
+
+
+--------
+KAU
+--------
+
+-----------------------
+1)
+E2U blue
+TYPE1-13-14-15-6-7-4-5
+-----------------------
+
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s\t%s\t%10.2f\n", $6, $14, $15}' | sort -k2 -k1 -k3 | wc -l
+4261
+# number of flows over this arc
+over full 4 year period of system
+
+#
+# sum of the KAU flows over this one arc
+#
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s\t%s\t%10.2f\n", $6, $14, $15}' | sort -k2 -k1 -k3 | cut -f3 | paste -s -d+ | bc -l
+3140766.23
+
+#
+# just about same as in diagram. We're working on more recent data
+#
+# Graphviz-2023-07-12-T13:50:45-UTC-simplified.png
+#
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s\n", $14}' | sort -u | wc -l
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s\n", $14}' | sort -u | wc -l
+259
+unique addresses
+
+similar magnitude as for KAG hisgher up
+
+Write those out to a file. just for kicks
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s\n", $14}' | sort -u > KAU-E2U-blue-users
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v x=$KAG_EmissionAccount '( ($5=="1") && ($13==x) ) {printf "%s\n", $14}' | sort -u > KAG-E2U-blue-users
+
+wc -l KAG-E2U-blue-users 
+# 256 KAG-E2U-blue-users
+
+linux> wc -l KAU-E2U*
+259 KAU-E2U-blue-users
+
+# can't resist. Quick compare with equivalent KAG user list
+
+linux> comm -12 KAG-E2U-blue-users KAU-E2U-blue-users | wc -l
+141
+
+# About half are the same
+# no idea what that may mean
+#
+
+
+# content of flows:
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t " " -k1 -k2 -k3 | more 
+
+#
+# pick out some records that look interesting
+#
+# cripes. it looks as if date sort works
+# All due to separator " ". Duh...
+#
+#
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t " " -k1 -k2 -k3 --debug | grep GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG | more
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t " " -k1 -k2 -k3 --debug | grep GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG | grep '\b2020-06-18'
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t " " -k1 -k2 -k3 --debug | grep GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG | grep '\b2020-06'
+sort: text ordering performed using ‘en_US.UTF-8’ sorting rules
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-01T00:41:44Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-01T10:36:42Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-02T00:40:09Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-02T05:22:02Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-03T00:57:44Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-03T07:21:14Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-09T00:35:07Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-09T02:22:54Z     100.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-11T06:58:54Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-11T08:11:17Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-12T08:08:43Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-12T16:34:37Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-15T10:27:38Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-15T13:04:35Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-15T14:10:29Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-16T02:17:39Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-17T07:51:39Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-17T08:28:26Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-18T02:51:15Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-18T07:58:15Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-19T04:30:40Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-19T09:54:41Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-22T05:58:24Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-23T02:21:45Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-24T06:32:47Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-24T23:50:23Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-29T04:51:37Z     200.00
+GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG 2020-06-30T03:13:04Z     200.00
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t " " -k1 -k2 -k3 --debug | grep GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG | grep '\b2020-06' | cut -c82- | paste -d+ -s | bc -l
+sort: text ordering performed using ‘en_US.UTF-8’ sorting rules
+4800.00
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e)) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t " " -k1 -k2 -k3 --debug | grep GAIM7NBWM4SIO6TUNZEEPJG5X4BN6TM3TPNOIWCJGG4THLH2SPOZ27LG | grep '\b2020-06' | cut -c82- | paste -d+ -s | bc -l | xargs printf "%-10.2f\n"
+sort: text ordering performed using ‘en_US.UTF-8’ sorting rules
+4800.00   
+
+
+# all multiples of 100 ?
+# Minting unit for KAU = 100
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e) && ($15 % 100) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 | more
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e) && ($15 % 100) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 | more
+GAQJIPG6HH46SNFMNK6BVVH6MW6IMDWU5MSTEPXI4RWVGBTZ526WWKAM 2021-03-03T00:22:12Z     311.04
+GAVY4CJW5MUTESUCFXRHU3ZPZYZCY2K6OCRIZQGXJRTKPMUATE5OBU7U 2019-09-09T05:12:10Z     311.04
+GB6ZZMIBRO6RQVOCPABHNVEURN3H6VINUB2MTKZV2BJVWP5WFDBWED54 2019-10-01T03:49:01Z      88.97
+GCJQRHPJFSMNSDFVMANP6R5E3IPIHAL2AQXYJ464UFXRE2JLSXKKN4UF 2020-09-18T01:04:41Z     311.04
+GDPWZC6EDJ4QN4VQBVRPJFE6DCG5HXH2M7APH5YRH24HKS6O5F72RUH4 2019-09-03T08:14:11Z    1244.14
+
+#
+# only 5 outlier records
+#
+
+linux> units -t "311.04 g" ozt
+10.000168
+linux> units -t "1244 g" ozt
+39.995529
+linux> units -t "1244.14 g" ozt
+40.00003
+linux> units -t "88.97 g" ozt
+2.8604519
+
+KAU has base unit 1 gramme
+4 records went in (where? dunno) like so
+
+10 ozt
+40 ozt
+40 ozt
+
+Odd man out:
+88.97
+could be a 90% fine. Just a guess
+From 2019.
+For the Digital Auditor to follow up on.
+
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e) && !($15 % 100) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 | wc -l
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount '( ($5=="1") && ($13==e) && !($15 % 100) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -t" " -k1 -k2 | wc -l
+4256
+4256 of 4261
+The rest are all multiples of 100
+
+Again this allows us to state with even more confidence "E2U blue" KAU is users minting straight to cold wallets
+
+
+-----------------------
+4) (sic)
+H2U orange
+TYPE0-11-8-10-6-7-4-5
+-----------------------
+
+#
+# first look at the actual data
+#
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h)) {printf "%s %s %10.2f\n", $8, $6, $10}' | sort -b -k2 -b -k1 | more
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h)) {printf "%s %s %10.2f\n", $8, $6, $10}' | sort -b -k2 -b -k1 | wc -l
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h)) {printf "%s %s %10.2f\n", $8, $6, $10}' | sort -b -k2 -b -k1 | wc -l
+4066
+number of flows along this arc
+
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h)) {printf "%s %s %10.2f\n", $8, $6, $10}' | sort -b -k2 -b -k1 | cut -c80- | paste -s -d+ | bc -l | xargs printf "%-10.2f\n"
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h)) {printf "%s %s %10.2f\n", $8, $6, $10}' | sort -b -k2 -b -k1 | cut -c80- | paste -s -d+ | bc -l | xargs printf "%-10.2f\n"
+503922.67 
+
+# nope
+
+Must exclude H2F flow
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v f=$FeePoolAccount -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h) && !($8==f) ) {printf "%s %s %10.2f\n", $8, $6, $10}' | sort -b -k2 -b -k1 | cut -c80- | paste -s -d+ | bc -l | xargs printf "%-10.2f\n"
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v f=$FeePoolAccount -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h) && !($8==f) ) {printf "%s %s %10.2f\n", $8, $6, $10}' | sort -b -k2 -b -k1 | cut -c80- | paste -s -d+ | bc -l | xargs printf "%-10.2f\n"
+312501.32 
+
+#
+#
+# jawohl
+#
+#
+
+# unique users on this arc?
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v f=$FeePoolAccount -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h) && !($8==f) ) {printf "%s\n", $8 }' | sort -u | wc -l
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v f=$FeePoolAccount -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h) && !($8==f) ) {printf "%s\n", $8 }' | sort -u | wc -l
+1415
+
+# write to file
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v f=$FeePoolAccount -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h) && !($8==f) ) {printf "%s\n", $8 }' | sort -u > KAU-H2U-orange-users
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v f=$FeePoolAccount -v h=$KAU_HotWalletAccount '( ($5=="0") && ($11==h) && !($8==f) ) {printf "%s\n", $8 }' | sort -u > KAU-H2U-orange-users
+linux> wc -l KAU-H2U-orange-users 
+1415 KAU-H2U-orange-users
+
+linux> wc -l KAU*2U-*users
+  259 KAU-E2U-blue-users
+ 1415 KAU-H2U-orange-users
+ 1674 total
+
+Any of 'em common to both files ?
+
+
+comm -12 KAU-E2U-blue-users KAU-H2U-orange-users | wc -l
+linux> comm -12 KAU-E2U-blue-users KAU-H2U-orange-users | wc -l
+31
+
+List'em in case.
+
+comm -12 KAU-E2U-blue-users KAU-H2U-orange-users | sort
+
+linux> comm -12 KAU-E2U-blue-users KAU-H2U-orange-users | sort
+GAKDUWXXPDWGMJZP262KW753HPO4VH4JD2YVNP7MSH5KG2B5VOUFGCQS
+GAQ4UF3U35HW22FBHUQ3P43QPBI5ADXWXF6P3AXE4SSOQ7C76BNDIENA
+GAW2TKRSNRX46ILOQ3E6SVUFY5CGH2I34PLUIRQH3IXVWFJXQQKMLXIV
+GB2JSVRB6X7ESX5ZFRJ3W6VFXJ75D3H3EI2JJKNVJC2P5OTXKGGZSGI5
+GB3LQCN3D6BCXL6P46FZBRVVMV7YDBZF3MSDHOZJFMTTQ3SBDJHY5UKV
+GB45O3XXJLGX4YN4TEZSSHUREU23V7CDDA4OLKBWWUTTPBXFF7QCMWPH
+GB4UJS7KO33VW7QXJTKHJVK454WDQ5E7KF3HGSADXGKGFBE47WIBXPYE
+GB572E57NCT7EAZHOAREDSIP44TNKDLKKSHXN7OQC72QD2I26SFFXDGK
+GBBIXA2YD33DKROEKSRP5MYEGBYSUKGAUQPCFYW7HHI5NHRRNYNWSIBM
+GBBK7MGOGNWXMR65HN5AGV5KZN7IS25EHLX7UUVZVYQCD3PXTMHLFBWK
+GBBR53ZZLZWAX7PDENTRJ5VAD4KBP4WIV76D4IJJFAGKVGGRTCW3ZGUA
+GBBXN3CBWAFH5P46KJRERQHDNPWWJQXGZ76WF2H27EETPMMOBEUQ62NN
+GBLR3KI277NKMDLEJ4DWVAWCNL2TM2SMWIXF47VX3Q5HALKTRBOCJYBY
+GBTYJZF57VMDH53X6L5DHXBWOEJQYUDKYMWCMECID76RQLIP6VJRQA4T
+GBVNQGRZYWDRBE57TU7Z62IRLFODSIFZ3WW2QQH4V4YRSGDB6AP5VNRS
+GBVOKUZF3T3RSG2FWFPBM775EUSIHISQTS6NSNOMGZ3QPD2RT5D5YYUH
+GBWXBLO46F4SJF2BCXCCN5OBRUPWYVSA2QJ7ADHD3PCLFBR6XQL6YYBQ
+GC22K5MZTCWOQVB5B5DR5ZSIZ4P3ZOS3KCK256F3TYJL643UDW4TXQHJ
+GC2DJH54XVQNPAXQFOX6NPRZSTKTO54Y7GGDDYE7WOUV2P4YKSJJUTKX
+GC3CU37266M72BV52ORMWDGIKSQK3VPMIJBMSBDSESTLABUJ4LWB7ZUE
+GC4I4KMIUVPXM6S7MXXR2CFEQG3QMLXU37QG72SLHJX3C2ZDLVLAHXSY
+GC4LL3HSRFWVPFV2ABASPOKEAS6RXBR3IYAO55VV2FTATBWOQMDT5PB6
+GCFPIGUMGIIELSUOICHNN7X4U3JFXWJ5QWHD3OTG35AI4PFQF6EBRQAJ
+GCLJ4RQRG3HAN3GGO4DHMHI7STA6PKOBWQJLH3NRS56Z647SLYPHPN7I
+GCNAJ2UB5K3BWRYP3RF2OQY4UUF5YTKM2556T2KBJA3W5474VIQ4ZSVC
+GD4NV4HPIZOD4S3UGYPOHTFBTYY372FNY6RWZZFXMEIMQF24VR2VJVMI
+GD77BCO3HAWCBIPXDHBK6DH3JNIB4MYHV6K2BUZLOPRVBYY5TYSSMC63
+GDEPDZCGVQ7U3337CM6QQU5GDDXMEXVM77WNLW3RFNP6JS45HVYW53AL
+GDEYJZ33T3EGHUSS6YB6MODS66KX7BVESEPPZZLNAAWJESDF326FL7S7
+GDOVPGZ6F6DXY4MPHLLL6VFF5IOOZG5ITM7LNR535W6OGHDAPD2IJTKA
+GDOYWXSOWGWWKNSW55PGKD3SNDKZBHWSU2CYUL56UI7JPF3GBPKIJQE5
+
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s %s %10.2f\n", $8, $6, $10 }' | sort -t" " -b -k1 -b -k2 | more
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s %s %10.2f\n", $8, $6, $10 }' | sort -t" " -b -k1 -b -k2 | grep '\bGANG7EL5J'
+
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v h=$KAU_HotWalletAccount -v f=$FeePoolAccount '( ($5=="0") && ($11==h) && !($8==f)) {printf "%s %s %10.2f\n", $8, $6, $10 }' | sort -t" " -b -k1 -b -k2 | grep '\bGANG7EL5J'
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-03-29T19:40:33Z      10.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-03-31T18:09:23Z     100.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-04-01T09:33:54Z     110.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-04-01T09:39:09Z     110.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-04-18T13:20:05Z     326.46
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-05-04T12:06:23Z     325.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-05-04T12:16:33Z       6.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-07-01T11:17:57Z     331.49
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-07-01T12:00:47Z      24.17
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-13T18:09:57Z     350.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-13T18:13:13Z       1.57
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-13T18:44:20Z      17.51
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-23T16:38:19Z     300.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-23T16:41:13Z       1.35
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-23T17:41:21Z       3.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-30T18:27:15Z     300.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-30T18:40:53Z       1.35
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-09-30T18:45:47Z       3.35
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-11-16T12:39:02Z     380.00
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-11-16T12:42:24Z       1.71
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2022-11-16T13:25:05Z       4.12
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2023-01-18T12:42:36Z     371.67
+GANG7EL5JLKBGDFRKE3MNUI2UP5CEVIND2JC5Q2NHI3MTCOEPCUJ53L6 2023-07-06T15:33:13Z     339.52
+
+linux> units -o "%5.6f" -t "1.47 / 350"
+0.004200
+possibly
+they are close together in time
+???
+
+#
+# wot iz dis?
+# no flippin' idea
+#
+# but there are ample useful techniques listed here that others can use to solve the puzzle
+# At least I have cleared the way for someone else somewhere sometime
+#
+# Fr 28 Jul 2023 17:22:32 UTC
+# Feierabend
+# Tschüss zäme
+#
+
+------------------------------
+
+
