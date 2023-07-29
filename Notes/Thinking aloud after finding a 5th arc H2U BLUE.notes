@@ -1,0 +1,257 @@
+
+
+Fr 28 Jul 2023 20:38:59 UTC
+
+
+if H2U blue exists
+
+Sum all outbound from H
+then exclude
+E
+F
+G
+
+linux> set | grep 'KAG\|Fee'
+BASH_REMATCH=([0]="\$KAG_ex" [1]="\$" [2]="" [3]="KAG_ex")
+FeePoolAccount=GDVIVQWQIOVXP4EWQNLZHEGGLUUQALJ47HSN2MZXCEJKSSH4DBRT5BDM
+KAG_EmissionAccount=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+KAG_GAPSAccount=GAPS3KZ4YVEL4UYFAGTE6L6H6GRZ3KYBWGY2UTGTAJBXGUJLBCYQIXXA
+KAG_HotWalletAccount=GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+KAG_InflationAccount=GBBVUAMR3CYNQKMNHVWCMUQVE3XQIL3WM5GSP5D6SCECKIZNNBT6FT7I
+KAG_RootAccount=GAUCIFE37F4KQ5F6QPNSZ75QKRQTNRCF32FZNUXMCXUFSKRMWGF76LTI
+KAG_extract=../dat/kag-stellar-export-2023-07-26-T13:02:13-UTC.csv
+
+------
+Count
+------
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount -v f=$FeePoolAccount -v g=$KAG_GAPSAccount -v h=$KAG_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | more
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount -v f=$FeePoolAccount -v g=$KAG_GAPSAccount -v h=$KAG_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | wc -l
+1319
+# number of flows over this arc
+# H2U blue
+
+compare to 
+What do E2U blue arc and H2U orange arc represent.notes
+# 1391
+# E2U blue
+
+------
+Sum
+------
+
+sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount -v f=$FeePoolAccount -v g=$KAG_GAPSAccount -v h=$KAG_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | cut -c80- | paste -d+ -s | bc -l
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount -v f=$FeePoolAccount -v g=$KAG_GAPSAccount -v h=$KAG_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | cut -c80- | paste -d+ -s | bc -l
+431291.70
+
+better
+H2U blue
+431 K KAG
+
+------------
+Look inside
+------------
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | awk -F, -v e=$KAG_EmissionAccount -v f=$FeePoolAccount -v g=$KAG_GAPSAccount -v h=$KAG_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | head
+GA2MDTJAHI6OEO7S4ELJDESDEF53WYTOGTY6FYDGDCOVQSIZ3YEIEISH 2022-01-17T14:38:16Z       4.40
+GA2Q5XXERPOC32J33B3DY7WJOD3IOW2ZIZ4REG3574GCZEPHKWEGP3IS 2019-10-11T13:56:58Z       0.44
+GA2Q5XXERPOC32J33B3DY7WJOD3IOW2ZIZ4REG3574GCZEPHKWEGP3IS 2019-10-11T14:06:52Z       0.35
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2020-08-06T14:04:56Z    1000.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2020-12-27T02:22:43Z     667.00
+GA2SYSIRL4JIDEBVTN3ILQW4QLUPN52ZR7U56CCOARTO4DPFAGGLNGME 2021-02-05T04:28:04Z     995.52
+GA2YMG6NYCI4MJFS4MYE6ZZKRXJEMHSITASB4D6TICZKYU7Z6F35WQZP 2022-05-05T20:21:02Z       0.44
+GA2YMG6NYCI4MJFS4MYE6ZZKRXJEMHSITASB4D6TICZKYU7Z6F35WQZP 2022-05-05T20:23:07Z       4.42
+GA2YMG6NYCI4MJFS4MYE6ZZKRXJEMHSITASB4D6TICZKYU7Z6F35WQZP 2022-05-09T10:14:40Z     216.81
+GA3KQ367GJ7A7GFN6C2DHGPWRBSKITPJQC5GOUX5Q3TXQJZDH42ECUII 2020-10-30T02:36:53Z      99.40
+
+
+
+------------------
+KAU
+------------------
+
+------
+Count
+------
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v f=$FeePoolAccount -v g=$KAU_GAPSAccount -v h=$KAU_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | wc -l
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v f=$FeePoolAccount -v g=$KAU_GAPSAccount -v h=$KAU_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | wc -l
+957
+number of flows along arc H2U blue
+
+
+------
+Sum
+------
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v f=$FeePoolAccount -v g=$KAU_GAPSAccount -v h=$KAU_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | cut -c80- | paste -d+ -s | bc -l
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v f=$FeePoolAccount -v g=$KAU_GAPSAccount -v h=$KAU_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | cut -c80- | paste -d+ -s | bc -l
+143942.23
+
+H2U blue
+143 K KAU
+
+
+------------
+Look inside
+------------
+
+sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v f=$FeePoolAccount -v g=$KAU_GAPSAccount -v h=$KAU_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | head
+
+linux> sed '1d' $KAU_extract | sed 's/\"//g' | awk -F, -v e=$KAU_EmissionAccount -v f=$FeePoolAccount -v g=$KAU_GAPSAccount -v h=$KAU_HotWalletAccount '($5=="1") && ($13==h) && !( ($14==e) || ($14==g) || ($14==f) ) {printf "%s %s %10.2f\n", $14, $6, $15}' | sort -b -k1 -b -k2 | head
+GA2EQ3YSFVXAVLIEDUCQ3FF2A2NTSDQ5QZ4XLVNLQ27PBYQ32X6H54U6 2021-09-30T13:56:49Z       0.10
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65 2022-04-29T16:16:21Z       1.00
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65 2022-05-02T16:20:21Z       1.00
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65 2022-05-02T16:21:56Z       9.00
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65 2022-05-02T16:26:21Z    1000.00
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65 2022-05-18T17:38:33Z       1.00
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65 2022-05-18T17:43:28Z     485.00
+GA2FTWONTSPD6FEA5J6BQ3HBYZRNY7BSRZIKDJO55QLBDZUY4GOPQN65 2022-05-18T17:46:53Z       1.00
+GA2LV3T56G46MKMJDXUZW6CYMSC7YN6RMM4S57Y5FOQYAC2ZL4CWMSZC 2019-12-06T07:59:00Z       3.48
+GA2MDTJAHI6OEO7S4ELJDESDEF53WYTOGTY6FYDGDCOVQSIZ3YEIEISH 2022-01-17T14:35:56Z      38.00
+
+
+-----------------------------------------------------------------------------------------------------
+
+Sa 29 Jul 2023 13:50:08 UTC
+
+	
+. ./KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh KAG $KAG_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15 
+
+looking for 
+431291.70
+
+Good
+
+github this one
+KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh KAG watcher-extract-file 999999 TYPE0-11-8-10 TYPE1-13-14-15
+
+the next:
+build-dot-file-for-3-vertex-5-arc-digraph.sh
+
+
+. ./build-dot-file-for-3-vertex-5-arc-digraph.sh outputfile-2023-07-29-T17:20:17-UTC-CiC-H2U-blue
+
+
+
+
+Model target:
+GCGTMT2X->GCZ4KXQF [label =     166400 color="orange"]
+
+from:
+E2U ORANGE	7325289.22
+to:
+E->U [label=	7325289.22 color="orange"]
+
+# https://joshtronic.com/2020/05/09/replacing-multiple-strings-with-sed/
+
+linux> cat t | sed 's/\(2U\|2E\)/->/g'
+E-> ORANGE	7325289.22
+H-> ORANGE	987088.51 
+E-> BLUE	1270938.08
+H-> BLUE	5221555.92
+H-> BLUE	431291.57 
+
+lol
+
+https://stackoverflow.com/questions/9318021/change-string-char-at-index-x
+echo $theStr | sed s/./A/5
+
+cat t | sed 's/./->/2'
+
+linux> cat t | sed 's/./->/2'
+E->U ORANGE	7325289.22
+H->U ORANGE	987088.51 
+E->U BLUE	1270938.08
+H->E BLUE	5221555.92
+H->U BLUE	431291.57 
+
+Hallelujah !
+
+
+
+Examples:
+
+. ./build-dot-file-for-3-vertex-5-arc-digraph.sh outputfile-2023-07-29-T16:58:45-UTC-CiC-H2U-blue
+. ./build-dot-file-for-3-vertex-5-arc-digraph.sh outputfile-2023-07-29-T17:20:17-UTC-CiC-H2U-blue
+. ./build-dot-file-for-3-vertex-5-arc-digraph.sh outputfile-2023-07-29-T16:58:45-UTC-CiC-H2U-blue
+. ./build-dot-file-for-3-vertex-5-arc-digraph.sh outputfile-2023-07-29-T17:14:49-UTC-CiC-H2U-blue
+
+
+linux> ls -ngtr *.png
+-rw-rw-r-- 1 1000 24177 Jul 29 20:31 Graphviz-3-vertex-5-arc-digraph-2023-07-29-T18:31:30-UTC.png
+-rw-rw-r-- 1 1000 23415 Jul 29 20:35 Graphviz-3-vertex-5-arc-digraph-2023-07-29-T18:35:01-UTC.png
+
+
+linux> history | cut -c8- | grep "./build-dot-file-for-3-vertex-5-arc-digraph.sh" | grep output | cut -c50-
+outputfile-2023-07-29-T16:58:45-UTC-CiC-H2U-blue
+outputfile-2023-07-29-T17:20:17-UTC-CiC-H2U-blue
+outputfile-2023-07-29-T16:58:45-UTC-CiC-H2U-blue
+outputfile-2023-07-29-T17:14:49-UTC-CiC-H2U-blue
+
+more \
+outputfile-2023-07-29-T16:58:45-UTC-CiC-H2U-blue \
+outputfile-2023-07-29-T17:20:17-UTC-CiC-H2U-blue \
+outputfile-2023-07-29-T16:58:45-UTC-CiC-H2U-blue \
+outputfile-2023-07-29-T17:14:49-UTC-CiC-H2U-blue
+
+
+
+Good ones:
+
+KAG
+KAU
+
+outputfile-2023-07-29-T17:14:49-UTC-CiC-H2U-blue
+outputfile-2023-07-29-T17:20:17-UTC-CiC-H2U-blue
+
+linux> more Graphviz-3-vertex-5-arc-digraph-2023-07-29-T18:31:30-UTC.dot
+digraph {
+E->U [label =	47262809.59	 color = "orange"]
+H->U [label =	312501.08 	 color = "orange"]
+E->U [label =	3140766.21	 color = "blue"]
+H->E [label =	49149284.01	 color = "blue"]
+H->U [label =	143942.33 	 color = "blue"]
+}
+linux> more Graphviz-3-vertex-5-arc-digraph-2023-07-29-T18:35:01-UTC.dot
+digraph {
+E->U [label =	7325289.22	 color = "orange"]
+H->U [label =	987088.51 	 color = "orange"]
+E->U [label =	1270938.08	 color = "blue"]
+H->E [label =	5221555.92	 color = "blue"]
+H->U [label =	431291.57 	 color = "blue"]
+}
+
+YES to both
+
+KAG
+Graphviz-3-vertex-5-arc-digraph-2023-07-29-T18:35:01-UTC.png
+
+KAU
+Graphviz-3-vertex-5-arc-digraph-2023-07-29-T18:31:30-UTC.png
+
+github this one
+KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh KAG watcher-extract-file 999999 TYPE0-11-8-10 TYPE1-13-14-15
+
+the next:
+build-dot-file-for-3-vertex-5-arc-digraph.sh
+
+
+
+
+To upload to github:
+
+2 png files 
+2 dot files
+2 output files
+2 bash
+
+
+
+
+
+
+
