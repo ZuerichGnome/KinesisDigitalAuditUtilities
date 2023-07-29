@@ -1,0 +1,7 @@
+digraph {
+E->U [label =	7325289.22	 color = "orange"]
+H->U [label =	987088.51 	 color = "orange"]
+E->U [label =	1270938.08	 color = "blue"]
+H->E [label =	5221555.92	 color = "blue"]
+H->U [label =	431291.57 	 color = "blue"]
+}
