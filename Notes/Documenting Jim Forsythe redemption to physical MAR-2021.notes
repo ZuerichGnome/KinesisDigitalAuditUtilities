@@ -1,0 +1,137 @@
+-----------------------------------------------------------------
+
+'Documenting Jim Forsythe redemption to physical MAR-2021.notes'
+to github
+
+Jim Forsythe once redeemed 200 KAG to physical in March 2021
+
+https://www.reddit.com/r/Wallstreetsilver/comments/m0ofk7/the_cheapest_source_of_physical_silver_available/?utm_source=share&utm_medium=web2x&context=3
+
+Let's see if we can find this transaction on the blockchain
+
+-----------------------------------------------------------------
+
+Oddly there shall be no doxxing here as a redemption occurs digitally between 2 system accounts.
+
+-----------------------------------------------------------------
+
+
+linux> KAG_extract=../dat/kag-stellar-export-2023-07-26-T13\:02\:13-UTC.csv 
+
+KAG_EmissionAccount=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+KAG_HotWalletAccount=GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+
+#
+# Fishing net
+# with sensible date range
+#
+
+date -d "11/03/2021 06:57:28 UTC- 4 days" +"%Y-%m-%d-T%T-%Z"
+NOPE
+
+November 
+!=
+March
+
+d1=`date -d "11 Mar 2021 06:57:28 UTC -5 days" +"%Y-%m-%d-T%T-%Z"`
+d2=`date -d "11 Mar 2021 06:57:28 UTC +5 days" +"%Y-%m-%d-T%T-%Z"`
+
+d1=`echo $d1 | sed 's/-CET/Z/'`
+d2=`echo $d2 | sed 's/-CET/Z/'`
+
+echo $d{1,2}
+2021-03-06-T07:57:28Z 2021-03-16-T07:57:28Z
+
+
+Sehr gut
+
+printf "H2E BLUE\n"
+
+E=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+H=GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+sed '1d' $KAG_extract | sed 's/\"//g' | sort -t, -k6 | sed -n "1,9999999p" | awk -F, -v d1=$d1 -v d2=$d2 -v e="$E" -v h="$H" '( ($5=="1") && (($13==h) && ($14==e)) && ( ($6>d1) && ($6<d2) )) {printf "%s\t%10.2f\n", $6, $15}' | sort -n -k1
+
+linux> sed '1d' $KAG_extract | sed 's/\"//g' | sort -t, -k6 | sed -n "1,9999999p" | awk -F, -v d1=$d1 -v d2=$d2 -v e="$E" -v h="$H" '( ($5=="1") && (($13==h) && ($14==e)) && ( ($6>d1) && ($6<d2) )) {printf "%s\t%10.2f\n", $6, $15}' | sort -n -k1
+2021-03-10T23:45:36Z	  40000.00
+2021-03-10T23:46:16Z	  40000.00
+2021-03-11T06:57:28Z	    200.00
+2021-03-12T16:22:32Z	  10000.00
+2021-03-12T17:17:17Z	  20000.00
+2021-03-12T17:26:14Z	  10000.00
+2021-03-12T20:08:08Z	  25000.00
+2021-03-15T01:00:19Z	  10000.00
+
+YES
+
+sed '1d' $KAG_extract | sed 's/\"//g' | sort -t, -k6 | sed -n "1,9999999p" | awk -F, -v d1=$d1 -v d2=$d2 -v e="$E" -v h="$H" '( ($5=="1") && (($13==h) && ($14==e)) && (($6>d1) && ($6<d2)) && ($15 == 200) ) {printf "%s %s %10.2f\n", $6, $7, $15}' | sort -n -k1
+2021-03-11T06:57:28Z 8f781adb1e7bb02acd38e85cf7f66bc66705b9d34f728dc8ed0647f5854eeb34     200.00
+
+is clearly our man
+
+
+https://explorer.kinesis.money/transaction/KAG/8f781adb1e7bb02acd38e85cf7f66bc66705b9d34f728dc8ed0647f5854eeb34
+
+Created At
+11/03/2021 06:57:28 UTC
+Amount
+200.00000 KAG
+Fee
+0.90001 KAG
+Memo
+Type
+Payment
+Transaction Hash
+8f781adb1e7bb02acd38e85cf7f66bc66705b9d34f728dc8ed0647f5854eeb34
+From
+GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+To
+GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+
+Payment
+200
+KAG
+H
+to
+E
+
+Fee
+is illogical because this is a transfer between 2 system accounts
+Somewhere down the line, this may be nullified. aka Paid back to H.
+
+
+or hit CSV flat file directly:
+
+linux> grep 8f781adb1e7bb02acd38e85cf7f66bc66705b9d34f728dc8ed0647f5854eeb34 $KAG_extract 
+"54248950231732225","true","GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E","payment","1","2021-03-11T06:57:28Z","8f781adb1e7bb02acd38e85cf7f66bc66705b9d34f728dc8ed0647f5854eeb34","","","","","native","GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E","GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU","200.0000000","","","","","",""
+
+linux> grep 8f781adb1e7bb02acd38e85cf7f66bc66705b9d34f728dc8ed0647f5854eeb34 $KAG_extract | sed 's/"//g' | sed 's/,/\n/g' | nl -ba | sed '16,$d'
+     1	54248950231732225
+     2	true
+     3	GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+     4	payment
+     5	1
+     6	2021-03-11T06:57:28Z
+     7	8f781adb1e7bb02acd38e85cf7f66bc66705b9d34f728dc8ed0647f5854eeb34
+     8	
+     9	
+    10	
+    11	
+    12	native
+    13	GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+    14	GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+    15	200.0000000
+
+linux> head -1 $KAG_extract 
+"id","transactionSuccessful","sourceAccount","type","typeI","createdAt","transactionHash","account","into","startingBalance","funder","assetType","from","to","amount","signerKey","signerWeight","masterKeyWeight","lowThreshold","medThreshold","highThreshold"
+
+
+
+The above analysis confirms physical redemption triggers one flow along arc H2E BLUE.
+
+Visible publicly on the blockchain.
+
+
+Ende
+
+-----------------------------------------------------------------
+
