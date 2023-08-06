@@ -1,0 +1,156 @@
+
+Post to forum as
+
+[Info] Count unique ONCHAIN users across KAG and KAU: 4235
+
+-----------------------------------------------------
+To github
+
+data:
+unique-onchain-users-KAG-and-KAU
+bash
+KAG-or-KAU-list-users.sh
+notes:
+'list unique ONCHAIN users KAG and KAU.notes'
+
+
+-----------------------------------------------------
+
+
+
+U
+Set U
+How large is it?
+
+How many unique users across KAG and KAU ? On-chain
+Leave other currency pairs to the side for now.
+And all of KMS Exchange. Since not accessible to that level of granularity
+
+------------
+Pseudo-code
+
+KAG
+E2U blue
+H2U blue
+E2U orange
+H2U orange
+
+KAU
+E2U blue
+H2U blue
+E2U orange
+H2U orange
+
+sort -u
+wc -l
+DONE
+
+./list-users.sh KAG
+./list-users.sh KAU
+
+Actual:
+
+---------
+KAG
+---------
+
+linux> chmod 755 KAG-or-KAU-list-users.sh 
+
+
+
+./KAG-or-KAU-list-users.sh KAG $KAG_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15
+
+./KAG-or-KAU-list-users.sh KAG $KAG_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15
+
+linux> time ./KAG-or-KAU-list-users.sh KAG $KAG_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15
+Parameters
+./KAG-or-KAU-list-users.sh
+KAG
+../dat/kag-stellar-export-2023-08-03-T22:28:34-UTC.csv
+999999
+TYPE0-11-8-10
+TYPE1-13-14-15
+outputfile-2023-08-06-T18:33:45-UTC-USERS-KAG-ONCHAIN
+1) Exclude string BLUE or ORANGE users
+2) Then do a unique sort
+So 06 Aug 2023 18:33:47 UTC
+
+real	0m1.765s
+user	0m1.667s
+sys	0m0.374s
+linux> 
+
+
+linux> grep 'BLUE USERS\|ORANGE USERS' outputfile-2023-08-06-T18\:29\:31-UTC-USERS-KAG-ONCHAIN 
+E2U ORANGE USERS
+H2U ORANGE USERS
+E2U BLUE USERS
+H2U BLUE USERS
+
+linux> grep 'BLUE USERS\|ORANGE USERS' outputfile-2023-08-06-T18\:29\:31-UTC-USERS-KAG-ONCHAIN | sort -u  | wc -l
+4
+lol
+
+linux> grep -v 'BLUE USERS\|ORANGE USERS' outputfile-2023-08-06-T18\:29\:31-UTC-USERS-KAG-ONCHAIN | sort -u  | wc -l
+3103
+That's better
+
+
+grep -v 'BLUE USERS\|ORANGE USERS' outputfile-2023-08-06-T18:33:45-UTC-USERS-KAG-ONCHAIN | sort -u  | wc -l
+linux> grep -v 'BLUE USERS\|ORANGE USERS' outputfile-2023-08-06-T18:33:45-UTC-USERS-KAG-ONCHAIN | sort -u  | wc -l
+3103
+
+bestätigt
+
+
+Next:
+
+
+---------
+KAU
+---------
+
+linux> KAU_extract=../dat/kau-stellar-export-2023-08-03-T22\:37\:46-UTC.csv 
+linux> time ./KAG-or-KAU-list-users.sh KAU $KAU_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15
+Parameters
+./KAG-or-KAU-list-users.sh
+KAU
+../dat/kau-stellar-export-2023-08-03-T22:37:46-UTC.csv
+999999
+TYPE0-11-8-10
+TYPE1-13-14-15
+outputfile-2023-08-06-T18:35:26-UTC-USERS-KAU-ONCHAIN
+1) Exclude string BLUE or ORANGE users
+2) Then do a unique sort
+So 06 Aug 2023 18:35:32 UTC
+
+real	0m5.370s
+user	0m4.526s
+sys	0m0.717s
+linux>
+
+linux> grep -v 'BLUE USERS\|ORANGE USERS' outputfile-2023-08-06-T18:35:26-UTC-USERS-KAU-ONCHAIN | sort -u  | wc -l
+2418
+
+-------------------
+
+All together again now
+
+-------------------
+
+
+linux> cat outputfile-2023-08-06-T18:33:45-UTC-USERS-KAG-ONCHAIN outputfile-2023-08-06-T18:35:26-UTC-USERS-KAU-ONCHAIN | grep -v 'BLUE USERS\|ORANGE USERS' | sort -u  | wc -l
+4235
+
+For reference:
+
+cat outputfile-2023-08-06-T18:33:45-UTC-USERS-KAG-ONCHAIN outputfile-2023-08-06-T18:35:26-UTC-USERS-KAU-ONCHAIN | grep -v 'BLUE USERS\|ORANGE USERS' | sort -u  > unique-onchain-users-KAG-and-KAU
+
+linux> wc unique-onchain-users-KAG-and-KAU 
+  4235   4235 241395 unique-onchain-users-KAG-and-KAU
+
+
+
+------------
+
+
