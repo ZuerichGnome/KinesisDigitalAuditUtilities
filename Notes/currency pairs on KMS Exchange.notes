@@ -1,0 +1,52 @@
+
+
+[Info] All trading pairs on KMS Exchange
+
+
+So 06 Aug 2023 14:52:39 UTC
+
+
+
+#
+#
+# To store on github, remove the 2 KeyPair lines
+#
+#
+grep -v '^privateKey\|^publicKey' list-all-pairs.py > list-all-pairs-KeyPair-removed.py
+
+
+#
+# wip
+# =
+# work in progress
+#
+
+TEST
+
+expand -4 list-all-pairs.py > wip.py
+time python3 wip.py > outputfile-all-pairs
+
+linux> expand -4 list-all-pairs.py > wip.py
+time python3 wip.py > outputfile-all-pairs
+
+real	0m2.458s
+user	0m0.594s
+sys	0m0.115s
+
+
+ACTION
+
+linux> ./list-all-pairs.sh 
+
+real	0m1.931s
+user	0m0.559s
+sys	0m0.073s
+outputfile-2023-08-06-T15:30:10-UTC.png
+linux> eog outputfile-2023-08-06-T15\:30\:10-UTC.png 
+NOPE
+
+linux> display outputfile-2023-08-06-T15\:30\:10-UTC.png 
+
+
+
+
