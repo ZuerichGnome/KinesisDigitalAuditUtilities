@@ -1,0 +1,218 @@
+
+Di 08 Aug 2023 10:58:07 UTC
+Fr 04 Aug 2023 13:42:34 UTC
+
+
+1)
+linux> ./KAG-or-KAU-digraph-build-dot-file.sh $KAG_extract KAG TYPE0-11-8-10 TYPE1-13-14-15
+Parameters
+./KAG-or-KAU-digraph-build-dot-file.sh
+../dat/kag-stellar-export-2023-08-03-T22:28:34-UTC.csv
+KAG
+TYPE0-11-8-10
+TYPE1-13-14-15
+Graphviz-2023-08-04-T13:42:51-UTC_circo.png
+Graphviz-2023-08-04-T13:42:51-UTC.png
+Graphviz-2023-08-04-T13:42:51-UTC.dot
+linux> more Graphviz-2023-08-04-T13:42:51-UTC.dot
+
+2)
+linux> ./KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh KAG $KAG_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15
+Parameters
+./KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh
+KAG
+../dat/kag-stellar-export-2023-08-03-T22:28:34-UTC.csv
+999999
+TYPE0-11-8-10
+TYPE1-13-14-15
+KAG COIN IN CIRCULATION up to line 999999:
+3379251.18
+outputfile-2023-08-04-T13:46:37-UTC-CiC-H2U-blue
+Fr 04 Aug 2023 13:46:40 UTC
+
+
+linux> more outputfile-2023-08-04-T13:46:37-UTC-CiC-H2U-blue
+E2U ORANGE
+7339869.02
+H2U ORANGE
+991777.22 
+E2U BLUE
+1270938.08
+H2E BLUE
+5231555.92
+H2U BLUE
+431503.59 
+
+linux> cat outputfile-2023-08-04-T13:46:37-UTC-CiC-H2U-blue | sed -n '0~2p' | sed '4d' | paste -s -d+ | bc -l
+10034087.91
+
+--------------------------------------------------
+
+Back to the tedious API thing
+
+
+linux> echo $(( ( $(date '+%s' -d "2023-08-03") - $(date '+%s' -d "2023-01-01") ) / (24 * 60 * 60)))
+213
+linux> 
+
+bc <<< "scale=2; 213 + 365"
+linux> bc <<< "scale=2; 213 + 365"
+578
+
+
+Fish for 2022-2023
+
+        inputDate = '01-01-2022'
+
+
+linux> expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+linux> 
+linux> 
+linux> expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+linux> 
+linux> 
+linux> time python3 wip.py > kag-2022-2023
+
+but we're saving the world right?
+So the sacrifice is worth it
+
+Sound money for all. Yayyyyyyyyyyyyyy
+
+
+
+linux> time python3 wip.py > kag-2022-2023
+    
+real	2m7.971s
+user	0m10.914s
+sys	0m0.229s
+linux> 
+
+Fuck
+This data is atrocious
+
+cat kag-2022-2023 | sort -u > kag-tmp
+
+linux> grep "^0" kag-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | sort -t " " -k1 | wc -l
+59
+
+a joke
+
+erratic behaviour
+Cheshire Cat stuff
+
+
+
+
+linux> grep "^0" kag-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | sort -t " " -k1 | wc -l
+
+
+grep "^0" kag-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %4d\n", sum2, sum2 / NR, NR }'
+
+linux> grep "^0" kag-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %4d\n", sum2, sum2 / NR, NR }'
+522542.32 8856.65   59
+linux> 
+
+Totally different from yesterday................
+Grrr.............
+
+
+        inputDate = '01-01-2022'
+
+--------------------------------------
+It's a new day
+Hope springs eternal
+
+Di 08 Aug 2023 11:39:13 UTC
+
+
+grep -i 'ohlc\|range\|inputDate' Get-volume-inside-OHLC-from-a-given-hardcoded-date.py
+
+
+linux> grep -i 'ohlc\|range\|inputDate' Get-volume-inside-OHLC-from-a-given-hardcoded-date.py
+def getOHLC(pair, fromDate='2015-01-01T00:00:00.000Z', toDate='2022-03-31T00:00:00.000Z', timeFrame='60'):
+    url         = '/v1/exchange/ohlc/' + pair
+    print ('Get-volume-inside-OHLC-from-a-given-hardcoded-date.py')
+#        inputDate = '01-01-2022'
+        inputDate = '01-01-2022'
+        for i in range(578):
+            date = datetime.datetime.strptime(inputDate, date_format) + datetime.timedelta(days = i )
+            ohlc = getOHLC('KAG_USD',date,date,1440).json()
+            df   = pd.DataFrame(ohlc)
+        print('Unable to get OHLC')
+
+
+
+
+expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+grep -v '^privateKey\|^publicKey' Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > Get-volume-inside-OHLC-from-a-given-hardcoded-date-KeyPair-removed.py
+
+time python3 wip.py > kag-2022-2023-another-try
+
+
+linux> time python3 wip.py > kag-2022-2023-another-try
+
+real	6m16.127s
+user	0m32.336s
+sys	0m0.756s
+
+
+Yeah sporadic
+spasmodic even !
+
+
+
+linux> grep "^0" kag-2022-2023-another-try | awk -F " " '{sum7 += $7} END {printf "%7.2f %7.2f %4d\n", sum7, sum7 / NR, NR }'
+1647034.73 6359.21  259
+
+grep "^0" kag-2022-2023-another-try | awk -F" " '{printf "%s %-10.2f\n", $9, $7}' | sort -k1 > kag-volume-2022-sporadic-clean
+
+linux> grep "^0" kag-2022-2023-another-try | awk -F" " '{printf "%s %-10.2f\n", $9, $7}' | sort -k1 > kag-volume-2022-sporadic-clean
+linux> wc -l *spor*
+259 kag-volume-2022-sporadic-clean
+
+
+
+Clean it up to 
+date, volume 
+format
+
+Post data
+Post to spreadsheet
+DONE
+out
+
+
+linux> grep "^0" kag-tmp | awk -F" " '{printf "%s %-10.2f\n", $9, $7}' | sort -k1 > kag-volume-2022-sporadic-clean
+
+
+cat kag-volume-2022-sporadic-clean | cut -d " " -f2 > volume-kag
+
+> x <- read.table ('volume-kag')
+> class (x)
+[1] "data.frame"
+> #
+> # messes up for some reason:
+> # mean (x)
+> #
+> range (x)
+[1]      0.0 111309.3
+> summary (x)
+       V1          
+ Min.   :     0.0  
+ 1st Qu.:   940.8  
+ Median :  3104.0  
+ Mean   :  6359.2  
+ 3rd Qu.:  7603.6  
+ Max.   :111309.3  
+> q()
+linux> 
+
+1647034.73 6359.21  259
+Isch guet gsi
+
+
+
+
+
+
+

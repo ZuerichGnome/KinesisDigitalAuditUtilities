@@ -1,0 +1,466 @@
+So 06 Aug 2023 21:43:42 UTC
+
+
+./KAG-or-KAU-digraph-build-dot-file.sh $KAU_extract KAU TYPE0-11-8-10 TYPE1-13-14-15
+
+linux> ./KAG-or-KAU-digraph-build-dot-file.sh $KAU_extract KAU TYPE0-11-8-10 TYPE1-13-14-15
+Parameters
+./KAG-or-KAU-digraph-build-dot-file.sh
+../dat/kau-stellar-export-2023-08-03-T22:37:46-UTC.csv
+KAU
+TYPE0-11-8-10
+TYPE1-13-14-15
+Graphviz-2023-08-06-T21:44:59-UTC_circo.png
+Graphviz-2023-08-06-T21:44:59-UTC.png
+Graphviz-2023-08-06-T21:44:59-UTC.dot
+linux> 
+
+
+
+./KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh KAU $KAU_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15
+
+linux> ./KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh KAU $KAU_extract 999999 TYPE0-11-8-10 TYPE1-13-14-15
+Parameters
+./KAG-or-KAU-calculate-coin-in-circulation-and-H2U-blue-flow.sh
+KAU
+../dat/kau-stellar-export-2023-08-03-T22:37:46-UTC.csv
+999999
+TYPE0-11-8-10
+TYPE1-13-14-15
+KAU COIN IN CIRCULATION up to line 999999:
+1272291.79
+outputfile-2023-08-06-T21:46:24-UTC-CiC-H2U-blue
+So 06 Aug 2023 21:46:30 UTC
+linux> 
+
+linux> more outputfile-2023-08-06-T21:46:24-UTC-CiC-H2U-blue
+E2U ORANGE
+47309409.59
+H2U ORANGE
+313544.27 
+E2U BLUE
+3140766.21
+H2E BLUE
+49177884.01
+H2U BLUE
+144157.12 
+
+skip redemptions
+H2E BLUE
+( sed '4d' )
+
+cat outputfile-2023-08-06-T21:46:24-UTC-CiC-H2U-blue| sed -n '0~2p' | sed '4d' | paste -s -d+ | bc -l
+
+linux> cat outputfile-2023-08-06-T21:46:24-UTC-CiC-H2U-blue | sed -n '0~2p' | sed '4d' | paste -s -d+ | bc -l
+50907877.19
+
+copy/ paste to spreadsheet
+'wip MFP.ods'
+
+
+-------------------------------------------------------
+
+Now fish for volume data from OHLP API "getOHLC"
+
+Hard-code:
+
+        inputDate = '01-01-2019'
+
+            ohlc = getOHLC('KAU_USD',date,date,1440).json()
+
+
+linux> bc <<< "365 * 3"
+1095
+
+Just to see if same behaviour as for KAG
+where there was no volume data from this API function between 2019-2021
+
+
+#
+# those pesky tabs and the python parser with indentation:
+#
+expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+
+python3 wip.py
+
+CONTROL-C
+it runs
+so now write to it to output file
+after edit to 3 years
+then
+SAVE
+
+
+expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+python3 wip.py > kau-2019-2021
+
+
+
+#
+#
+# at the ready for github:
+# and as a reminder to get rid of the KeyPair when in public view
+#
+#
+grep -v '^privateKey\|^publicKey' Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > Get-volume-inside-OHLC-from-a-given-hardcoded-date-KeyPair-removed.py
+
+
+
+linux> expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+
+linux> expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+linux> time python3 wip.py > kau-2019-2021
+
+real	9m14.850s
+user	0m43.754s
+sys	0m0.866s
+
+
+As expected:
+
+linux> head kau-2019-2021 
+Get-volume-inside-OHLC-from-a-given-hardcoded-date.py
+Empty DataFrame
+Columns: []
+Index: []
+Empty DataFrame
+Columns: []
+Index: []
+Empty DataFrame
+Columns: []
+Index: []
+linux> tail kau-2019-2021 
+Empty DataFrame
+Columns: []
+Index: []
+Empty DataFrame
+Columns: []
+Index: []
+Empty DataFrame
+Columns: []
+Index: []
+Unable to get OHLC
+
+
+----------
+next..........
+
+        inputDate = '01-01-2022'
+
+
+bc <<< "365 + (8 * 30)"
+linux> bc <<< "365 + (8 * 30)"
+605
+
+Just about init?
+
+Ah the joys of hard-coding...
+
+expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+time python3 wip.py > kau-2022-2023
+
+Too greedy ?
+failed
+
+#	display.float_format = lambda x: '{10.2f}'.format(x)  # set as needed
+    display.max_rows = 500
+from whatever it was
+
+I am fishing
+trying to satisfy the python gods
+The pain of being a beginner at stuff
+
+
+echo $(( ( $(date '+%s' -d "2023-08-03") - $(date '+%s' -d "2023-01-01") ) / (24 * 60 * 60)))
+
+
+linux> echo $(( ( $(date '+%s' -d "2023-08-03") - $(date '+%s' -d "2023-01-01") ) / (24 * 60 * 60)))
+213
+linux> 
+
+Let's try that
+
+-------------
+WORKING
+literally like throwing a coin down a well and waiting for the plop sound
+-------------
+
+
+grep "^0" kau-2023 | sed 's/\.\{3\}//g' | awk -F" " '{sum5 += $5} END {printf "%7.2f %7.2f\n", sum5, sum5 / NR }'
+
+corny and WRONG
+
+
+
+data.............
+I love it
+
+
+grep "^0" kau-2023 | awk -F" " '{sum5 += $5} END {printf "%7.2f %7.2f\n", sum5, sum5 / NR }'
+
+linux> grep "^0" kau-2023 | awk -F" " '{print $7}' | head
+269.97012
+9.59316
+212.41505
+6957.16375
+23249.16135
+10561.00093
+30841.26223
+211.94451
+235.79868
+66370.11009
+
+kewl
+keep the data though
+
+linux> grep "^0" kau-2023 | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | head
+2023-01-01T00:00:00.000Z 269.970120
+2023-01-02T00:00:00.000Z 9.593160
+2023-01-03T00:00:00.000Z 212.415050
+2023-01-04T00:00:00.000Z 6957.163750
+2023-01-05T00:00:00.000Z 23249.161350
+2023-01-06T00:00:00.000Z 10561.000930
+2023-01-07T00:00:00.000Z 30841.262230
+2023-01-08T00:00:00.000Z 211.944510
+2023-01-09T00:00:00.000Z 235.798680
+2023-01-10T00:00:00.000Z 66370.110090
+
+Very nice
+
+linux> grep "^0" kau-2023 | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | wc -l
+some data is there
+linux> 
+
+51 records for the whole year 2023
+oh.................................
+
+51 / 213
+bc <<< "51 / 213"
+linux> bc <<< "scale=2; 51 / 213"
+.23
+brr......
+
+A tad meaningless but here we go:
+
+grep "^0" kau-2023 | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %5d\n", sum2, sum2 / NR, NR }'
+
+linux> grep "^0" kau-2023 | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %5d\n", sum2, sum2 / NR, NR }'
+351113.27 6884.57    51
+
+
+
+
+Try again for 2022
+
+some data is there 
+some is not
+
+blimey
+this seems to be picking up 40% +
+not bad
+48 K of data so far
+ya never know
+
+
+lest I forget
+
+grep -v '^privateKey\|^publicKey' Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > Get-volume-inside-OHLC-from-a-given-hardcoded-date-KeyPair-removed.py
+
+
+linux> time python3 wip.py > kau-2022
+
+real	7m5.366s
+user	0m34.963s
+sys	0m0.614s
+
+aha
+
+
+linux> grep "^0" kau-2022 | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %4d\n", sum2, sum2 / NR, NR }'
+4491003.24 14394.24  312
+
+312 out of 365 
+amazing
+bc <<< "scale=2; 312 / 365"
+linux> bc <<< "scale=2; 312 / 365"
+.85
+linux> 
+
+85%
+
+linux> cat kau-2023 kau-2022 > kau-tmp
+linux> grep "^0" kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %4d\n", sum2, sum2 / NR, NR }'4842116.52 13339.16  363
+update the spreadsheet
+
+go back to 
+2019-2021
+
+linux> bc <<< "365 * 3"
+1095
+
+expand -4 Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > wip.py
+grep -v '^privateKey\|^publicKey' Get-volume-inside-OHLC-from-a-given-hardcoded-date.py > Get-volume-inside-OHLC-from-a-given-hardcoded-date-KeyPair-removed.py
+
+
+python3 wip.py > kau-2019-2021
+
+0 bytes so far
+after 5 minutes ?
+
+8K now but:
+
+Empty DataFrame
+Columns: []
+Index: []
+
+oh tedium............................
+
+this is like watching paint dry
+Zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+
+
+14K of this f...ing stuff
+all empty
+
+finished
+I forgot to time it
+but 
+ALL EMPTY
+2019-2021
+all empty
+
+
+clean up what we were lucky to get to:
+
+date volume
+
+that's it
+
+cat kau-2023 kau-2022 | sort -u > kau-tmp
+grep "^0"  kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | head
+grep "^0"  kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' > kau-volume-what-is-available-from-ohlc-API
+
+grep "^0" kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %4d\n", sum2, sum2 / NR, NR }'
+
+linux> grep "^0" kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | awk -F " " '{sum2 += $2} END {printf "%7.2f %7.2f %4d\n", sum2, sum2 / NR, NR }'
+4842116.52 13339.16  363
+
+xfer to spreadhsheet
+
+The best I can do with wot's available. init.
+
+
+Back to KAG with my new python panda processing...
+To be consistent all round ....
+
+
+cat kau-2023 kau-2022 | sort -u > kau-tmp
+cat kau-2023 kau-2022 | sort -u | sort -t " " -k1  > kau-tmp
+grep "^0" kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | sort -t " " -k1
+
+grep "^0"  kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}'  | sort -t " " -k1 > kau-volume-what-is-available-from-ohlc-API 
+
+linux> grep "^0"  kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}'  | sort -t " " -k1 | grep -v -b 1440.00 | head
+13:2022-01-02T00:00:00.000Z 141.062400
+49:2022-01-13T00:00:00.000Z 90618.827060
+87:2022-01-18T00:00:00.000Z 181964.153280
+126:2022-01-21T00:00:00.000Z 41683.327700
+164:2022-01-23T00:00:00.000Z 391.900740
+200:2022-01-24T00:00:00.000Z 127.000000
+236:2022-01-26T00:00:00.000Z 31112.749070
+274:2022-01-28T00:00:00.000Z 27185.952580
+312:2022-01-29T00:00:00.000Z 51902.990520
+350:2022-01-30T00:00:00.000Z 2626.278390
+
+Yes more hard-coding
+There's nothing like it
+
+but when the data is pretty lousy, ya just 'ave to
+
+#
+# get rid of the 1440.00
+#
+grep "^0" kau-tmp | awk -F" " '{printf "%s %-10-2f\n", $9, $7}' | sort -t " " -k1 | sed '1d' > kau-volume-what-is-available-from-ohlc-API 
+
+linux> head kau-volume-what-is-available-from-ohlc-API 
+2022-01-02T00:00:00.000Z 141.062400
+2022-01-13T00:00:00.000Z 90618.827060
+2022-01-18T00:00:00.000Z 181964.153280
+2022-01-21T00:00:00.000Z 41683.327700
+2022-01-23T00:00:00.000Z 391.900740
+2022-01-24T00:00:00.000Z 127.000000
+2022-01-26T00:00:00.000Z 31112.749070
+2022-01-28T00:00:00.000Z 27185.952580
+2022-01-29T00:00:00.000Z 51902.990520
+2022-01-30T00:00:00.000Z 2626.278390
+linux> 
+
+linux> tail kau-volume-what-is-available-from-ohlc-API 
+2023-02-11T00:00:00.000Z 33526.325790
+2023-02-12T00:00:00.000Z 1214.606980
+2023-02-13T00:00:00.000Z 433.895020
+2023-02-14T00:00:00.000Z 1239.375640
+2023-02-15T00:00:00.000Z 7710.478180
+2023-02-16T00:00:00.000Z 1922.391340
+2023-02-17T00:00:00.000Z 3188.287830
+2023-02-18T00:00:00.000Z 2677.595090
+2023-02-19T00:00:00.000Z 256.871400
+2023-02-20T00:00:00.000Z 270.206610
+
+Ludicrous
+
+linux> wc -l kau-volume-what-is-available-from-ohlc-API 
+362 kau-volume-what-is-available-from-ohlc-API
+
+cp kau-volume-what-is-available-from-ohlc-API kau-volume-2022-2023-some-not-all-clean
+cat kau-volume-2022-2023-some-not-all-clean | cut -d " " -f2
+cat kau-volume-2022-2023-some-not-all-clean | cut -d " " -f2 > volume-kau
+
+
+R < R-script.R --no-save  
+
+
+> x <- read.table ('volume-kau')
+> class (x)
+[1] "data.frame"
+> #
+> # messes up for some reason:
+> # mean (x)
+> #
+> range (x)
+[1]      0.0 181964.2
+> summary (x)
+       V1          
+ Min.   :     0.0  
+ 1st Qu.:   516.2  
+ Median :  3410.9  
+ Mean   : 13376.0  
+ 3rd Qu.: 14493.3  
+ Max.   :181964.1  
+> q()
+
+awk result was:
+13339.16 
+
+linux> cat volume-kau | nl -ba | more
+
+I could investigate more
+but can't be bothered
+
+Am I bovvered?
+nah...........
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
