@@ -1,0 +1,173 @@
+
+
+
+Mo 07 Aug 2023 12:38:50 UTC
+
+# from 
+# list-all-pairs.sh
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{print $4, $3}' | sort -u -t" " | sed '1d' | cut -d " " -f1 | sort -u | wc -l
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{print $4, $3}' | sort -u -t" " | sed '1d' | cut -d " " -f1 | sort -u 
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{print $4, $3}' | sort -u -t" " | sed '1d' | cut -d " " -f1 | sort -u > left
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{print $4, $3}' | sort -u -t" " | sed '1d' | cut -d " " -f2 | sort -u
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{print $4, $3}' | sort -u -t" " | sed '1d' | cut -d " " -f2 | sort -u | wc -l
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{print $4, $3}' | sort -u -t" " | sed '1d' | cut -d " " -f2 | sort -u > right
+
+cat left right | sort -u | wc -l
+
+comm -12 left right
+comm -23 left right
+comm -13 left right
+
+history | tail -30 | cut -c8- 
+
+13 on the left
+13 on the right
+but not the same vertices
+21 total vertices
+
+linux> comm -12 left right
+BTC
+KAG
+KAU
+USDC
+USDT
+
+linux> comm -23 left right
+AED
+AUD
+CAD
+CHF
+EUR
+GBP
+SGD
+USD
+
+linux> comm -13 left right
+BCH
+DASH
+ETH
+KVT
+LTC
+XDC
+XLM
+XRP
+
+5 + 8 + 8 = 21
+
+https://unix.stackexchange.com/questions/354835/how-to-list-all-combinations-of-words
+printf "%s\n" {1,2}" "{a,b,c}
+
+linux> printf '%s\n' {1..2}" "{a..c} 
+1 a
+1 b
+1 c
+2 a
+2 b
+2 c
+
+Whoa !!!
+
+linux> factor 441
+441: 3 3 7 7
+=
+21 squared
+
+
+https://www.mathsisfun.com/combinatorics/combinations-permutations-calculator.html
+AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP
+
+
+cat left right | sort -u | paste -s -d "," | sed 's/^/{/' | sed 's/$/}/'
+{AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP}
+
+linux> printf "%s\n" {AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP}" "{AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP} | nl -ba
+
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-4s %-4s\n", $2, $7}' | sed 's/  / /g' | sed '$d' | wc -l
+109
+
+   102	USDT_USD USD 
+   103	XDC_USD USD 
+   104	XLM_USD USD 
+   105	XRP_USD USD 
+   106	BTC_USDC USDC
+   107	ETH_USDC USDC
+   108	BTC_USDT USDT
+   109	ETH_USDT USDT
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s %-4s\n", $2, $7}' | sed 's/  / /g' | sort -t " " -k2 | sed '1d' | nl -ba
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s %-4s\n", $2, $7}' | sed 's/  / /g' | sort -t " " -k2 | sed '1d' | cut -d " " -f2 | sort -u | wc -l
+14
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s %-4s\n", $2, $7}' | sed 's/  / /g' | sort -t " " -k2 | sed '1d' | cut -d " " -f2 | sort -u | nl -ba
+     1	AED
+     2	AUD
+     3	BTC
+     4	CAD
+     5	CHF
+     6	ETH
+     7	EUR
+     8	GBP
+     9	KAG
+    10	KAU
+    11	SGD
+    12	USD
+    13	USDC
+    14	USDT
+
+rm -f t
+printf "digraph {\n" >> t
+# printf "rankdir=\"LR\"\n" >> t
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s %-4s\n", $2, $7}' | sed 's/  / /g' | sort -t " " -k2 | sed '1d' | sed 's/ $//g' | sed 's/ /->/g' >> t
+printf "}\n" >> t
+
+linux> xdot -f fdp t
+
+xdot -f fdp t -o feeCurrencies.png
+
+Check:
+
+linux> grep KVT outputfile-all-pairs 
+7          KVT_USD          KVT           USD             0              2         USD
+
+
+
+
+
+
+
+
+
+indegrees
+
+
+outdegrees
+
+
+
+
+
+
+dot -Tpng -o q.png quick.dot
+
+linux> xdot -f fdp Graphviz_flatfile-2023-08-07-T12:58:56-UTC.dot
+
+not really
+
+
+shortest path
+How to draw 'em graphically ?
+
+Do that later some time. If possible.
+Low priority for now.
+Very interesting mathematically however :-)
+
+
+
+
+
+
+
