@@ -1,0 +1,452 @@
+
+Previously:
+A closer look at all pairs.notes
+using:
+getPairs()
+https://github.com/ZuerichGnome/KinesisDigitalAuditUtilities/blob/main/python/ListPairs-KeyPair-removed.py
+
+
+-----------------------
+
+Avanti:
+
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | wc -l
+109
+
+7
+Open that up
+
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_//g' | sort > in_out
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk -F " " '{printf "%s%s\n",$2, $1}' | sort > switch_out_in
+
+linux> comm -12 in_out switch_out_in 
+
+empty
+good
+Thus each trading pair can cover both directions
+
+2 * 109 in all
+
+218
+
+21^2
+
+441
+
+loops
+21
+
+420
+with no loops
+
+What are the ?
+
+420 - 218
+
+and then draw 'em
+
+fun exercise :-)
+
+
+linux> printf "%s\n" {AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP}" "{AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP} | nl -ba | tail
+   432	XRP KAU
+   433	XRP KVT
+   434	XRP LTC
+   435	XRP SGD
+   436	XRP USD
+   437	XRP USDC
+   438	XRP USDT
+   439	XRP XDC
+   440	XRP XLM
+   441	XRP XRP
+
+total beauty
+
+prompted by 
+https://unix.stackexchange.com/questions/354835/how-to-list-all-combinations-of-words
+
+from previous work:
+
+cat left right | sort -u | paste -s -d "," | sed 's/^/{/' | sed 's/$/}/'
+{AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP}
+
+
+
+
+Let's redo that just to prove we're not inventing this data from thin air:
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' 
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk '{print $1}' > left2
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk '{print $2}' > right2
+linux> wc -l left2 right2
+109 left2
+109 right2
+218 total
+
+yeah
+that's it
+
+arcs point from these 13 guys:
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk '{print $1}' | sort -u | nl -ba
+     1	BCH
+     2	BTC
+     3	DASH
+     4	ETH
+     5	KAG
+     6	KAU
+     7	KVT
+     8	LTC
+     9	USDC
+    10	USDT
+    11	XDC
+    12	XLM
+    13	XRP
+
+to these other 13 vertices with some duplicates:
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk '{print $2}' | sort -u | nl -ba
+     1	AED
+     2	AUD
+     3	BTC
+     4	CAD
+     5	CHF
+     6	EUR
+     7	GBP
+     8	KAG
+     9	KAU
+    10	SGD
+    11	USD
+    12	USDC
+    13	USDT
+
+Spell it out 'cos we're manic:
+
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk '{print $1}' | sort -u > set-1
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk '{print $2}' | sort -u > set-2
+
+linux> comm -12 set-1 set-2
+BTC
+KAG
+KAU
+USDC
+USDT
+linux> comm -13 set-1 set-2
+AED
+AUD
+CAD
+CHF
+EUR
+GBP
+SGD
+USD
+linux> comm -23 set-1 set-2
+BCH
+DASH
+ETH
+KVT
+LTC
+XDC
+XLM
+XRP
+
+5 in common
+8
+8
+
+21 Vertices in all
+5 + 8 + 8
+
+Back to K 21
+the complete graph on 21 vertices
+
+printf "%s\n" {AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP}" "{AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP} > K-21
+
+linux> printf "%s\n" {AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP}" "{AED,AUD,BCH,BTC,CAD,CHF,DASH,ETH,EUR,GBP,KAG,KAU,KVT,LTC,SGD,USD,USDC,USDT,XDC,XLM,XRP} > K-21
+linux> head K-21 
+AED AED
+AED AUD
+AED BCH
+AED BTC
+AED CAD
+AED CHF
+AED DASH
+AED ETH
+AED EUR
+AED GBP
+
+Take out loops
+Vertex1 = Vertex2
+
+head K-21 | awk '!($1 == $2) {}'
+
+linux> cat K-21 | awk '!($1 == $2) {print}' | wc -l
+420
+
+Easy when you know what you're doing
+well you know just about anyway
+awk sees space as terminator by default
+print on its own does its thing
+could be more explicit but hey..........
+
+cat K-21 | awk '!($1 == $2) {print}' > K-21-minus-loops
+
+linux> wc -l K-21-minus-loops 
+420 K-21-minus-loops
+
+
+Let's quickly redo the original arcs
+to then append the reverse set
+
+
+use space separator this time
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | sort > in_out_2
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | awk -F " " '{printf "%s %s\n",$2, $1}' | sort > switch_out_in_2
+linux> head switch_out_in_2 
+AED BCH
+AED BTC
+AED DASH
+AED ETH
+AED KAG
+AED KAU
+AED LTC
+AED XDC
+AED XLM
+AED XRP
+
+These 2 * 109 arcs are part of the K21 graph
+We want to see the complement
+
+linux> cat in_out_2 switch_out_in_2 | wc -l
+218
+
+The complement:
+
+comm -23 K-21
+
+Oh heck
+trailing spaces probably
+
+linux> sed 's/ $//g' both-directions | wc -c
+1784
+linux> sed 's/ $//g' both-directions | wc -c^C
+linux> wc -c both-directions 
+1873 both-directions
+linux> sed 's/ $//g' both-directions > both-directions_2
+
+probably
+
+linux> wc -c switch_out_in_2 
+892 switch_out_in_2
+linux> sed 's/ $//g' switch_out_in_2 | wc -c
+892
+
+ah that one's ok
+
+linux> wc -c K-21-minus-loops 
+3480 K-21-minus-loops
+linux> sed 's/ $//g' K-21-minus-loops | wc -c
+3480
+
+
+back to business:
+
+linux> sed 's/ $//g' both-directions | sort > both-directions_2
+might as well
+
+dashes and underscores
+not very consistent
+
+linux> comm -23 <(sort K-21-minus-loops) both-directions_2 | wc -l
+202
+
+This *is* the number we're looking for.............
+
+Compare with
+https://github.com/ZuerichGnome/KinesisDigitalAuditUtilities/blob/main/pix/feeCurrencies.png
+
+visually
+
+Let's just do it anyway
+
+
+
+rm -f t
+printf "digraph {\n" >> t
+comm -23 <(sort K-21-minus-loops) both-directions_2 | sed 's/ /->/g' >> t
+printf "}\n" >> t
+
+A quick look:
+xdot -f fdp t 
+hopeless
+use circo instead
+as we did for the original 109 arcs
+
+Oh I have both directions still....
+Hm....
+
+circo t
+
+linux> circo -Tpng t -o quick.png
+linux> eog quick.png 
+
+Too many arcs for the human eye
+
+
+xdot -f fdp t -o K-21-minus-loops-minus-109-edges-in-both-directions-218.png
+
+------------------
+
+go from arc to edge
+by kicking out one direction
+
+comm -23 <(sort K-21-minus-loops) both-directions_2 | sort > complement
+
+linux> comm -23 <(sort K-21-minus-loops) both-directions_2 | sort > complement
+linux> head complement 
+AED AUD
+AED CAD
+AED CHF
+AED EUR
+AED GBP
+AED KVT
+AED SGD
+AED USD
+AED USDC
+AED USDT
+
+How to delete the pair
+AUD AED
+etc...
+
+O(n^2)
+search and destroy
+
+   192	XLM XRP
+   193	XRP BCH
+   194	XRP BTC
+   195	XRP DASH
+   196	XRP ETH
+   197	XRP KVT
+   198	XRP LTC
+   199	XRP USDC
+   200	XRP USDT
+   201	XRP XDC
+   202	XRP XLM
+
+XLM XRP
+XRP XLM
+how to only keep only one direction ?
+
+sort -u 
+somehow
+?
+
+linux> awk -F " " '{ printf "%s %s\n", $2, $1}' complement | sort | wc -l
+202
+
+comm again somehow ?
+
+linux> awk -F " " '{ printf "%s %s\n", $2, $1}' complement | sed -n '1,101p' | wc -l
+101
+
+mad or not ?
+
+linux> comm -13 complement <(sort take-half-unsorted) | wc -l
+0
+linux> comm -23 complement <(sort take-half-unsorted) | wc -l
+101
+linux> comm -12 complement <(sort take-half-unsorted) | wc -l
+101
+
+wot doz dat mean ?
+
+
+
+
+linux> comm -23 complement <(sort take-half-unsorted) | nl -ba | head
+     1	AED SGD
+     2	AED USD
+     3	AED USDC
+     4	AED USDT
+     5	AUD SGD
+     6	AUD USD
+     7	AUD USDC
+     8	AUD USDT
+     9	BCH LTC
+    10	BCH USDC
+
+linux> comm -12 complement <(sort take-half-unsorted) | nl -ba | head
+     1	AED AUD
+     2	AED CAD
+     3	AED CHF
+     4	AED EUR
+     5	AED GBP
+     6	AED KVT
+     7	AUD AED
+     8	AUD CAD
+     9	AUD CHF
+    10	AUD EUR
+
+Hmmm
+By construction, we built the complete graph K(21)
+This had edges in both direction by construction
+
+
+
+
+Throw the first version it at GraphViz and see
+
+
+rm -f t
+touch t
+printf "graph complement {\n" >> t
+comm -23 complement <(sort take-half-unsorted) | sed 's/ /--/g' >> t
+printf "}\n" >> t
+
+circo -Tpng t -o NonTradeablePairsOnKMS.png
+eog NonTradeablePairsOnKMS.png
+
+
+
+
+Total beauty
+
+Which reminds us the first graph should not have been a digraph but a graph with simple edges
+
+
+Let's redo that one .....................
+
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_//g' | sort > in_out
+
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_//g' 
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | wc -l
+109
+
+Yeah.
+That woz it
+
+
+rm -f t
+touch t
+printf "graph TradeablePairsOnKMS {\n" >> t
+cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/ $//g' | sed 's/_/ /g' | sed 's/ /--/g' >> t
+printf "}\n" >> t
+
+circo -Tpng t -o TradeablePairsOnKMS.png
+eog TradeablePairsOnKMS.png 
+
+
+
