@@ -1,0 +1,102 @@
+
+continued from
+playing with currency pairs.notes
+
+
+
+
+How did I get rid of second edge?
+
+A-B
+B-A
+
+I screwed up
+I assumed I had solved it but it was slack thinking instead
+
+
+Doing the digraph is easy and reliable
+but it will look cluttered
+
+
+Need to
+To make it correct until I find how to transform a directed  graph to a similar undirected graph
+
+
+Here goes:
+
+Use output from 
+python API getPairs()
+
+un aller retour
+
+in public transport:
+
+1)
+outbound-trip
+2)
+inbound-trip
+
+1)
+Get rid of trailing space at end of line to match properly later
+
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | sort | wc 
+    109     218     981
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | sed 's/ $//g' | sort | wc 
+    109     218     892
+linux> cat outputfile-all-pairs | sed '1,2d' | sed '/^$/d' | awk -F" " '{printf "%-8s\n", $2}' | sort | sed '1d' | sed 's/_/ /g' | sed 's/ $//g' | sort > outbound-trip
+
+
+2)
+cat outbound-trip | awk -F " " '{printf "%s %s\n",$2, $1}' | sort 
+
+linux> cat outbound-trip | awk -F " " '{printf "%s %s\n",$2, $1}' | wc
+    109     218     892
+
+kewl
+
+cat outbound-trip | awk -F " " '{printf "%s %s\n",$2, $1}' | sort > inbound-trip
+
+linux> cat outbound-trip | awk -F " " '{printf "%s %s\n",$2, $1}' | sort > inbound-trip
+
+3)
+Merge them together to get both directions
+
+cat outbound-trip inbound-trip > both-directions
+
+linux> cat outbound-trip inbound-trip > both-directions
+linux> wc -l both-directions
+218 both-directions
+
+Looks good
+
+4)
+subtract set from K23 to get complement of non-tadeable pairs
+
+linux> comm -23 <(sort K-21-minus-loops) <(sort both-directions) | sort | wc -l
+202
+
+perfect
+
+comm -23 <(sort K-21-minus-loops) <(sort both-directions) | sort > complement
+
+5)
+Throw that at Graphviz and see how cluttered it looks.
+At least it is now correct
+
+
+rm -f v
+touch v
+printf "digraph NonTradeablePairsOnKMS {\n" >> v
+cat complement | sed 's/ /->/g' >> v
+printf "}\n" >> v
+
+circo -Tpng v -o NonTradeablePairsOnKMS-corrected.png
+
+linux> eog NonTradeablePairsOnKMS-corrected.png 
+
+
+fdp -Tpng v -o NonTradeablePairsOnKMS-corrected-force-directed.png
+
+
+Do 10 Aug 2023 17:57:28 UTC
+
