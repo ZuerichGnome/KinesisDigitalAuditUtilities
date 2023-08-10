@@ -1,0 +1,154 @@
+Do 10 Aug 2023 23:29:21 UTC
+
+sudo R
+
+install.packages("igraph")
+
+* DONE (igraph)
+
+The downloaded source packages are in
+	‘/tmp/RtmphWQ89w/downloaded_packages’
+
+working !
+wow
+
+
+#
+# build a dictionary for 21 vertices
+#
+linux> cat both-directions | cut -d " " -f1 | sort -u | nl -n ln 
+1     	AED
+2     	AUD
+3     	BCH
+4     	BTC
+5     	CAD
+6     	CHF
+7     	DASH
+8     	ETH
+9     	EUR
+10    	GBP
+11    	KAG
+12    	KAU
+13    	KVT
+14    	LTC
+15    	SGD
+16    	USD
+17    	USDC
+18    	USDT
+19    	XDC
+20    	XLM
+21    	XRP
+
+cat both-directions | cut -d " " -f1 | sort -u | nl -n ln > dictionary
+
+
+#
+# explode currency pairs to 2 separate lines
+#
+
+linux> cat complement | awk '{printf "%s\n", $1; printf "%s\n", $2}' | wc -l
+linux> cat complement | awk '{printf "%s\n", $1; printf "%s\n", $2}' > explode
+
+
+#
+# 1)
+# translate name of currency to number in dictionary
+# 2)
+# merge each pair of records back into 1 line
+#
+
+for i in `cat explode`; do grep -w $i dictionary | cut -f1; done | awk -f merge-numbers.awk > complement-converted-to-numbers
+
+linux> wc -l complement-converted-to-numbers
+202 complement-converted-to-numbers
+
+#
+# Avoid interactive work. Of course.
+#
+
+R < collapse-into-undirected.R --no-save 
+
+linux> nl -ba complement-converted-to-numbers-undirected | more
+
+#
+# Thank you:
+#             Gabor Csardi
+#
+
+#
+#
+# That wrote to "complement-converted-to-numbers-undirected"
+#
+#
+
+linux> wc -l complement-converted-to-numbers*
+ 202 complement-converted-to-numbers
+ 101 complement-converted-to-numbers-undirected
+
+very very nice
+
+
+#
+#
+# explode edge list just created by igraph to 2 consecutive lines
+# same tehnique as higher up
+#
+#
+
+cat complement-converted-to-numbers-undirected | awk '{printf "%s\n", $1; printf "%s\n", $2}' | wc -l
+cat complement-converted-to-numbers-undirected | awk '{printf "%s\n", $1; printf "%s\n", $2}' > explode-2
+
+
+#
+#
+# translate back from number to string (-f2)
+#
+#
+for i in `cat explode-2`; do grep -w $i dictionary | cut -f2; done | awk -f merge-strings.awk > complement-converted-back-to-strings
+
+
+linux> nl -ba complement-converted-back-to-strings | head
+     1	AED AUD
+     2	AED CAD
+     3	AED CHF
+     4	AED EUR
+     5	AED GBP
+     6	AED KVT
+     7	AED SGD
+     8	AED USD
+     9	AED USDC
+    10	AED USDT
+
+
+#
+#
+# Throw it all at Graphviz with a new dot file
+#
+#
+rm -f w
+touch w
+printf "graph NonTradeablePairsOnKMS {\n" >> w
+cat complement-converted-back-to-strings | sed 's/ /--/g' >> w
+printf "}\n" >> w
+
+circo -Tpng w -o NonTradeablePairsOnKMS-undirected.png
+eog NonTradeablePairsOnKMS-undirected.png
+
+---------------------------------------------
+github:
+
+merge-numbers.awk
+merge-strings.awk
+
+collapse-into-undirected.R
+
+Use-igraph-undirected.notes
+
+NonTradeablePairsOnKMS-undirected.png
+
+---------------------------------------------
+
+
+
+
+
