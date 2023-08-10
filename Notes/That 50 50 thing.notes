@@ -1,0 +1,163 @@
+
+
+On KMS Exchange:
+
+1)
+# https://presearch.com/search?q=1%20ETH%20in%20SGP
+
+Buy ETH from SGD:
+
+1.00 Ethereum = 2,459.15 74 Singapore Dollars
+1.00 Ethereum = 2459.1574 Singapore Dollars
+
+Round it for visual clarity
+Buy 1 ETH for 2460 SGD
+#
+# value from a few hours ago
+# thus market prices will not be in exact synch
+#
+
+2)
+Calculate fee:
+
+linux> units -t -o "%-7.4f" "2460 * 0.22 percent"
+5.4120 
+
+linux> units -t -o "%-7.4f" "2460 SGD * 0.22 percent" SGD
+5.4120 
+SGD
+
+3)
+Allocate  fee:
+
+Allocate to MFP KAG and to MFP KAU equally (50:50):
+
+linux> units -t -o "%-7.4f" "(1/2) 5.4120 SGD" SGD
+2.7060 
+
+linux> date -u
+Mi 09 Aug 2023 23:52:59 UTC
+
+3a)
+linux> units -t XAG SGD
+30.664165
+
+linux> units -t -o "%-7.4f" "(1/2) 5.4120 SGD" XAG
+0.0882 
+
+ozt AG
+KAG
+
+linux> qalc "1 /0.0882 "
+1 / 0.0882 ≈ 11.33786848
+
+About 1 eleventh of an ozt Ag
+
+3b)
+linux> units -t XAU SGD
+2592.1315
+
+linux> units -t -o "%-7.4f" "(1/2) 5.4120 SGD" "XAU (g/ozt)"
+0.0325 
+
+g Au
+KAU
+
+linux> qalc "1 / 0.0325 "
+1 / 0.0325 ≈ 30.76923077
+
+About 1 thirtieth of a gramme Au
+
+
+4 steps in all
+
+------------------------------------------------------------------
+
+Check:
+
+XAG
+
+linux> units -o "%-7.4f" -t "2 XAG 0.0882" SGD
+5.4092 
+
+XAU
+linux> units -o "%-7.4f" -t "2 XAU (g/ozt) * 0.0325" SGD
+5.4170 
+
+sort of but not quite
+
+calc error:
+
+linux> bc <<< "scale=4; (5.4120 / 5.4092 ) - 1"
+.0005
+0.05 %
+under
+
+linux> bc <<< "scale=4; (5.4120 / 5.4170  ) - 1"
+-.0010
+0.1 %
+over
+
+------------------------------------------------------------------
+
+Target GraphViz syntax:
+
+digraph {
+H->U [label = 982577     color="orange"]
+...
+SNIP
+
+
+------------------
+
+Let's go:
+
+------------------
+
+OneTradeByOriginCurrency
+
+Buy 1 ETH for 2460 SGD
+
+linux> units -t -o "%-7.4f" "(1/2) 5.4120 SGD" SGD
+2.7060 
+
+rm -f t
+touch t
+printf "digraph OneTradeByOriginCurrency {\n" >> t
+echo "rankdir=\"LR\"" >> t
+echo "SGD->ETH [label = 2460]" >> t
+echo "SGD->KAG [label = 2.7060]" >> t
+echo "SGD->KAU [label = 2.7060]" >> t
+printf "}\n" >> t
+
+dot t -Tpng -o OneTradeByOriginCurrency.png
+
+-----------------
+
+OneTradeByDestinationCurrency
+
+linux> units -t -o "%-7.4f" "(1/2) 5.4120 SGD" XAG
+0.0882 
+
+linux> units -t -o "%-7.4f" "(1/2) 5.4120 SGD" "XAU (g/ozt)"
+0.0325 
+
+
+rm -f u
+touch u
+printf "digraph OneTradeByDestinationCurrency {\n" >> u
+echo "rankdir=\"LR\"" >> u
+echo "SGD->ETH [label = 1]" >> u
+echo "SGD->KAG [label = 0.0882 ]" >> u
+echo "SGD->KAU [label = 0.0325 ]" >> u
+printf "}\n" >> u
+
+dot u -Tpng -o OneTradeByDestinationCurrency.png
+
+linux> feh -D 5 OneTradeByOriginCurrency.png OneTradeByDestinationCurrency.png 
+
+YES
+
+
+
+
