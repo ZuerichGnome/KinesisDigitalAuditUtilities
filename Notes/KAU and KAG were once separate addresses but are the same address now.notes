@@ -1,0 +1,158 @@
+KAU and KAG were once separate addresses but are the same address now.notes
+
+
+
+Troglodytes
+Well-known member
+LocationU.K.
+Sunday at 8:46 PM
+#3
+I think the great majority of users have never minted or transacted on the blockchain. Therefore the great majority is under the radar.
+
+Another complication is (if I remember it correctly) that KAU and KAG were once separate addresses but are the same address now.
+
+-----------------------------
+
+
+Let me attempt some creative guessing around that statement...
+
+That would result in some triple-counting.
+
+Not a problem if the original 2 separate user accounts are then deactivated for current use from the date of the merge.
+
+I must assume they remain visible for historical processing of the data. After all, the records will still be on the blockchain.
+
+pic:
+kag-user-mand-kau-user-n-merge-to-user-o.png
+
+
+KAG User M
+KAU User N
+
+are merged into
+
+KAG and KAU User O
+
+3 apparently distinct users who actually map back to 1 actual user
+
+
+https://forum.kinesis.money/threads/info-count-unique-onchain-users-across-kag-and-kau-4235.1885/
+
+We know by previous inspection:
+4235
+is the total whenever I posted
+
+Thus:
+
+At worst:
+linux> units -t -o "%5.2f" "4235 / 3"
+1411.67
+
+If the merge occurred very recently,
+
+1410 actual users in total instead of 4235
+
+!=
+Users in KMS Exchange is a different matter altogether.
+
+These are actual users on the blockchain:
+
+Users who have minted by EPD at least once and/ or
+Users who have minted from fiat at least once and/ or
+Users who have transferred to a personal wallet (either hot or cold; their own or to someone else's; out of HotWallet at any rate)
+
+
+
+If the merge occurred in 2020 say, your guess is as good as mine (pure and total speculation! )
+
+
+
+The Digital Auditor might like to know if this applies to 10, 100, 200, 500, 1000 or 1410 users
+Knowing the approximate date of the user account merge would be informative as well.
+
+
+To be cleared up by Kinesis people at some point.
+
+NOT URGENT :-)
+
+Ende and out.
+
+
+
+-----------------------------------
+
+Target syntax:
+https://graphviz.org/doc/info/shapes.html
+
+Oh!
+http://magjac.com/graphviz-visual-editor/
+Skip for now :-)
+
+
+
+digraph G {
+  { 
+    node [margin=0 fontcolor=blue fontsize=32 width=0.5 shape=circle style=filled]
+    b [fillcolor=yellow fixedsize=true label="a very long label"]
+    d [fixedsize=shape label="an even longer label"]
+  }
+  a -> {c d}
+  b -> {c d}
+}
+
+---------------------------------------
+
+vi m
+xdot m
+xdot -f dot m
+gedit m
+xdot -f dot m
+
+grep rankdir *.notes
+grep rankdir *.sh
+
+xdot -f circo m
+xdot -f fdp m
+xdot -f dot m
+
+history | cut -c8-
+
+
+
+digraph G {
+  { 
+    rankdir="LR"
+    node [shape=rectangle]
+    m [label="KAG User M"]
+    n [label="KAU User N"]
+    o [label="KAG and KAU User O"]
+  }
+  m -> {o}
+  n -> {o}
+}
+
+
+linux> dot -Tpng -o kag-user-mand-kau-user-n-merge-to-user-o.png  m
+
+m
+'KAU and KAG were once separate addresses but are the same address now.notes'
+ kag-user-mand-kau-user-n-merge-to-user-o.png
+
+
+---------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
