@@ -1,0 +1,106 @@
+
+
+
+Reacting to LFTV on youtube today
+https://www.youtube.com/watch?v=Yk6Y32KO6eg
+
+Turning paper into gold is the answer to the broken fiat system. Feat. Adam Trexler - LFTV Ep. 138
+
+linux> date -u
+Fr 01 Sep 2023 22:26:27 UTC
+linux> 
+
+
+Using prices as advertised at
+https://valaurum.com/shop/
+and current fake spot price:
+linux> units -o "%-5.2f" -t XAU USD
+1940.05
+
+We see some impressive markups.
+
+
+I always admire the great poise and assurance of sales and marketing people...
+
+Let's run the numbers. As usual now...
+
+Write it up as code:
+
+1)
+mg denominations:
+-----------------
+linux> for i in 1000 500 100 50
+do
+  # echo $i
+  units -o "%-5.2f" -t "$i mg XAU (1/ozt)" USD
+done
+62.37
+31.19
+6.24 
+3.12 
+linux> 
+
+2)
+ozt denominations:
+------------------
+linux> units -o "%-5.2f" -t "(1 / 1000) ozt XAU (1/ozt)" USD
+1.94 
+
+Compare with:
+
+lynx -dump https://valaurum.com/shop/?products-per-page=all > t
+linux> cat t | grep "\$[0-9]" | sort -u
+          + $101.68
+          + $108.00
+          + $12.27
+          + $13.50
+          + $206.10
+          + $21.00 – $30.00
+          + $30.17
+          + $55.35
+          + $6.63
+          + $67.50
+   [56]$0.00 0 Cart
+   Save 10% on orders over $2000 [240]Dismiss
+linux> 
+
+3)
+2023 Edition – 1000mg North American Bison Aurum® Gold Bill
+
+units -o "%-5.2f" -t "(101.68 / 62.37) - 1" percent
+linux> units -o "%-5.2f" -t "(101.68 / 62.37) - 1" percent
+63.03
+63% markup
+
+1000 mg = 1 KAU
+units -o "%-5.2f" -t "1 g XAU (1/ozt)" USD
+linux> units -o "%-5.2f" -t "1 g XAU (1/ozt)" USD
+62.37
+
+4)
+Republic of Ghana 1 Cedi Aurum®
+
+linux> units -o "%-5.2f" -t "(21 / 1.94) - 1" percent
+982.47
+
+Nearly 1000% markup
+
+Instead of paying 2 bucks, you can pay 20 bucks+
+
+
+using as principal units:
+
+units -o "%-5.2f" -t kg g
+units -o "%-5.2f" -t g mg
+units -o "%-5.2f" -t kg mg
+units -o "%-5.5f" -t ozt g
+
+1000.00
+1000.00
+1000000.00
+31.10348
+
+linux> units -o "%-5.2f" -t "1 ozt XAU (1/ozt)" USD
+1940.05
+
+
