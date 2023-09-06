@@ -1,0 +1,253 @@
+
+In summary, if I understand the gist of this thread,
+
+[quote]
+1 Aurum = 1 mg Au
+1 Goldback = (1/1000) ozt Au
+[/quote]
+
+Thus using current spot price for gold,
+
+[quote]
+1 Aurum = 0.0624 USD fiat
+1 Goldback = 1.9401 USD fiat
+[/quote]
+
+Great.
+I must however bump up a concern I raised previously about the African Goldback notes.
+
+These are clearly labelled as 1 Goldback = (1/1000) ozt Au
+Yet their price seems to range between 20 USD and 30 USD.
+
+This strikes me as egregiously high. As if someone has a scam going. I would suggest that anybody into sound money should avoid these notes at those prices and warn others accordingly.
+
+Ghanaians, Cameroonians and Tanzanians would be better off using the Nevada, New Hampshire, Utah, Wyoming AURUM (unit: mg) versions of these notes.
+
+Per se, there is nothing wrong with GOLDBACKS (unit: milli ozt). It's just the maths and price look way off.
+
+
+
+
+
+https://valaurum.com/shop/
+
+--------------------------------
+1 Aurum = 1 mg Au
+1 Aurum = 10^(-6) kg Au
+
+
+1000 mg = 1 g
+1 Kinesis KAU = 1 g Au
+1 KAU = 1000 Aurum (Aura? if Latin)
+
+linux> units -o "%-5.4f" -t "1 mg XAU (1/ozt)" USD
+0.0624
+linux> units -o "%-5.4f" -t "1 g XAU (1/ozt)" USD
+62.3741
+
+https://valaurum.com/shop/
+
+----
+
+1 Goldback = (1/1000) ozt Au
+1 Goldback = 1 milli ozt Au
+
+1 Goldback = 1 milli ozt Au
+
+linux> units -o "%-5.4f" -t "(1/1000) ozt XAU (1/ozt)" USD
+1.9401
+linux> units -o "%-5.4f" -t XAU USD
+1940.0500
+
+https://www.goldback.com/exchange-rate
+
+----
+
+The 3 African bank notes sold by Valaurum are advertised effectively as 1 Goldback each.
+
+----
+
+linux> units -t oz
+ounce = 1|16 pound = 0.028349523 kg
+linux> units -t ozt
+troyounce = 1|12 troypound = 0.031103477 kg
+
+linux> units -t kg mg
+1000000
+
+
+--------------------------------
+
+linux> units -o "%-5.4f" -t "(1/1000) ozt XAU (1/ozt)" USD
+1.9401
+About 2 bucks
+Add a 100% markup/ premium
+4 bucks
+4 USD
+fiat
+
+Accoring to their own web page, Valaurum sells these between
+20 USD
+and
+30
+USD
+
+Between 10* and 20* the spot price.
+
+Between 5* and 7.5* a price that would include a 100% markup (20 / 4 and 30 / 4).
+
+500%
+-
+750%
+of marked-up price...
+
+A profit of 20-4 = 16 USD per note
+or
+A profit of 30-4 = 26 USD per note
+
+
+
+Extortion?
+Swindle?
+Fraud?
+or
+an egregious error
+or
+sabotage
+a deferred time bomb
+Time bomb
+
+https://en.wikipedia.org/wiki/Time_bomb
+or
+chaff to make us waste time on pointless junk ?
+
+Psychopaths rejoicing at what they can get away with ?
+Sadists ?
+
+
+IMHO these 3 examples are detrimental to the cause of sound money.
+
+Ghanaian, Cameroonians and Tanzanians would be better off using the Nevada, New Hampshire, Utah, Wyoming AURUM (unit: mg) versions of these notes.
+Per se, there is nothing wrong with GOLDBACKS (unit: milli ozt). It's just the maths and price looks way off.
+
+
+They could be used to smear the sound money movement at any future date.
+
+If it is an error, those responsible should admit so publicly. Fast.
+
+Honest people should stay well clear of this muck. 
+It's a clear scam.
+
+
+
+But then how come these are legal tender?
+
+
+Interprétation au deuxième degré.
+
+
+1)
+The Ghana Valaurum bill
+
+Like selling ice to eskimos?
+Ghana, ex Gold Coast. Major gold producer
+
+https://valaurum.com/product/republic-of-ghana-1-cedi-aurum/
+"“Cedi,” the term for shell money, is an important historical form of currency that circulated throughout Europe, Africa, and the New World. Our design team paid homage to this traditional currency throughout the full-color artwork on this bill."
+
+A very expensive shell
+
+APMEX offering 20% off.
+That's generous!
+https://www.apmex.com/product/218166/2020-republic-of-ghana-1-1000-oz-gold-african-liberty-foil-note
+
+
+
+2)
+Caméroun
+https://valaurum.com/product/republic-of-cameroon-aurum/
+"Republic of Cameroon 100 Francs CFA Black Rhinoceros Aurum®"
+
+Rhinoceros horn to represent how Africans are getting shafted?
+
+3)
+Tanzania
+https://valaurum.com/product/tanzanian-lake-tanganyika-aurum/
+"Catfish Legal Tender Gold Bill"
+
+A catfish
+An allusion to another type of catfish?
+https://www.investopedia.com/terms/c/cat-fishing.asp
+
+
+
+
+A modern reenactment of slavery?
+
+https://en.wikipedia.org/wiki/B%C3%A9hanzin
+Dahomey/= Bénin, Ghana. All part of The Slave Coast
+Francisco Félix de Sousa (1754–1849)
+
+https://en.wikipedia.org/wiki/Slave_Coast_of_West_Africa
+https://en.wikipedia.org/wiki/Category:African_slave_trade
+Bernard Lugan
+https://www.youtube.com/watch?v=W35DW6cxHrc
+Nation of Islam:
+The-Secret-Relationship-Between-Blacks-and-Jews.pdf 
+https://en.wikipedia.org/wiki/The_Secret_Relationship_Between_Blacks_and_Jews
+
+Professor Tony Martin (1942-2013)
+
+
+
+
+In any Muslim country the penalty for theft is:
+https://en.wikipedia.org/wiki/Hudud#Amputation
+
+Best to give this stuff a wide berth
+
+
+Is it honourable to exploit fellow human beings who may be a little challenged wrt brain cells?
+
+https://wisevoter.com/country-rankings/average-iq-by-country/#ghana
+https://wisevoter.com/country-rankings/average-iq-by-country/#cameroon
+https://wisevoter.com/country-rankings/average-iq-by-country/#tanzania
+
+58.16
+67.76
+74.95
+
+Yikes...............
+
+
+
+
+
+
+linux>
+convert -append -resize 25% *.jpg foo.png
+feh foo.png 
+
+1)
+The cedi is the unit of currency of Ghana. It is the fourth historical and only current legal tender in the Republic of Ghana. One cedi is divided into one hundred pesewas. After independence, Ghana separated itself from the British West African pound, which was the currency of the British colonies in the region. Wikipedia
+
+2)
+The shilling is the currency of Tanzania. It is subdivided into 100 cents. The Tanzanian shilling replaced the East African shilling on 14 June 1966 at par. Wikipedia
+
+3)
+The Central African CFA franc is the currency of six independent states in Central Africa: Cameroon, Central African Republic, Chad, Republic of the Congo, Equatorial Guinea and Gabon. These six countries have a combined population of 55.2 million people, and a combined GDP of over US$100 billion. Wikipedia
+Official website: beac.int
+Symbol: FCFA
+Central bank: Bank of Central African States
+Subunit: Centime
+Banknotes: 2000 francs
+Coins: 25 francs, 500 francs
+ISO code: XAF
+
+
+
+
+
+
+
+
