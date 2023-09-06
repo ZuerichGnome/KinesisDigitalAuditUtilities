@@ -1,0 +1,399 @@
+
+Correction.
+
+According to the infographic at goldback.com, the goldback is not defined as a weight but as the value the market is willing to pay for their smallest 1 unit note at any point in time.
+
+In August 2021, this happened to result in a markup of 88%.
+
+This could however vary daily and by geographical location?
+
+1 goldback = 3.36 USD fiat
+on
+25 Aug 2021
+
+
+linux> convert  -resize 50% Screenshot\ from\ 2023-09-06\ 06-56-51.png  foo.png
+Original infographic:
+https://www.goldback.com/exchange-rate
+
+
+------------------
+
+Starting at bottom at the train-track in their infographic
+https://www.goldback.com/exchange-rate
+
+Section:
+"Comparison of Fractional Gold Products"
+"(1 gram or less, as of 25-Aug-2021)"
+
+7 mine carts to check
+
+
+
+
+Price was somewhere around:
+1815
+USD / ozt
+https://www.macrotrends.net/1333/historical-gold-prices-100-year-chart
+
+
+
+linux> units -t "(1 / 1000 ) ozt 1815 (1/ozt)"
+1.815
+
+Mark it up by 88%
+units -t "(1 / 1000 ) ozt 1815 (1/ozt) (1 + 88 percent)"
+
+linux> units -t "(1 / 1000 ) ozt 1815 (1/ozt) (1 + 88 percent)"
+3.4122
+
+They end up with
+3.36 
+so........
+
+linux> units -t "3.36 * (100/188) * 1000"
+1787.234
+
+Actually no.
+
+units -t "3.36 * 1000"
+linux> units -t "3.36 * 1000"
+3360
+
+linux> units -o "%-5.2f" -t "3360 / 1787"
+1.88 
+
+Their market price for 1 ozt Au = 3360 USD fiat in August 2021.
+
+That must be the price they are starting with.
+
+3.36
+USD 
+=
+1
+goldback
+
+Does this make sense ?
+
+No idea. It's what they do.
+
+They clearly define 1 goldback as the price the market is willing to pay for their basic 1 unit note that contains 1 milli ozt Au
+That includes the markup.
+
+
+They then define 1 goldback as the price of 1 milli ozt Au *including markup*.
+
+Thus 1 goldback is not fixed.
+
+It is not a weight but a market value.
+And variable.
+
+
+-------------------------------------------------------------
+
+1)
+
+linux> units -t "(1 / 1000 ) ozt XAU (1/ozt)" USD
+1.94005
+linux> units -t "(1 / 1000 ) ozt" g
+0.031103477
+
+They have 
+0.03 g
+Good enough
+
+1 goldback
+1 goldback
+
+
+linux> units -t "(3.36 / 1.94005) - 1" percent
+73.191413
+
+In the ballpark
+They have 88%
+
+After a little algebra, they are using a gold price per ozt of:
+
+linux> units -t "3.36 * (100/188) * 1000"
+1787.234
+
+linux> units -t "3.36 * (100/188) * 1"
+1.787234
+USD per Goldback
+
+
+
+2)
+ACB NobleMint 1 Gram .9999 Fine 24k Pure Gold in Certificate of Authenticity Assay Card
+https://americancertifiedbullion.com/products
+???
+
+linux> units -t ozt gr
+480
+linux> units -t "(1 / 1000 ) ozt" gr
+0.48
+linux> units -t gr g
+0.06479891
+
+They have
+0.06 g
+Good enough
+
+linux> units -t gr "(1 / 1000 ) ozt" 
+2.0833333
+goldbacks
+
+Their infographic says:
+2.82
+goldbacks
+A mistake ?
+
+Perhaps they meant Aurums ?
+linux> units -t gr mg
+64.79891
+Nope..........
+
+
+linux> units -t "9.48 * (100 / 254)"
+3.7322835
+USD for 1 gr
+
+linux> units -t "9.48 * (100 / 254) * 480"
+1791.4961
+USD / ozt
+In the ballpark
+
+
+3)
+Nadir gold card 0.1 g
+1g	0,5g are the smallest specs listed here:
+https://www.nadirmetal.com.tr/en/au-gram-bar-2/
+
+0.1 g
+100 mg
+
+Check:
+linux> units -t "100 mg" g
+0.1
+
+linux> units -t "0.1 g" "(1 / 1000 ) ozt"
+3.2150747
+goldbacks
+
+Their infographic says:
+12.74
+goldbacks
+A mistake ?
+
+4)
+Next mine cart:
+Karatbar 0.1 Gram Gold 
+
+We have alrady seen this should be:
+3.2150747
+goldbacks
+
+Their infographic says:
+6.85
+
+Mistake ?
+
+5)
+monarch-lucky-horseshoe 0.25 g gold
+
+https://www.monarchpreciousmetals.com/1-4-gram-9999-fine-gold-round-monarch-lucky-horseshoe-sealed-in-capsule/
+
+linux> units -t "0.25 g" "(1 / 1000 ) ozt"
+8.0376866
+goldbacks
+
+7.38 goldbacks according to the infographic
+???
+
+Perhaps they're using ounces?
+linux> units -t "0.25 g" "(1 / 1000 ) oz"
+8.8184905
+Nope...
+
+linux> units -t oz
+ounce = 1|16 pound = 0.028349523 kg
+linux> units -t stone pound
+14
+
+A great mystery...
+
+6)
+Monarch Four Leaf Clover 0.5 gramme gold
+https://www.monarchpreciousmetals.com/1-2-gram-9999-fine-gold-round-monarch-four-leaf-clover-sealed-in-capsule/
+
+linux> units -t "0.5 g" "(1 / 1000 ) ozt"
+16.075373
+goldbacks
+
+12.39 goldbacks according to the infographic
+???
+
+7)
+https://www.pandaamerica.com/china-2020-panda-1-gram-gold-bu-coin/
+
+linux> units -t "1 g" "(1 / 1000 ) ozt"
+32.150747
+goldbacks
+
+29.12 goldbacks according to the infographic
+
+linux> seq 1 7 
+1
+2
+3
+4
+5
+6
+7
+linux> seq 1 7 > t0
+
+
+if [ -f "t" ]; then rm -f t; fi; touch t;
+
+cat >> t << EOF
+
+1
+1
+
+2.0833333
+2.82
+
+3.2150747
+12.74
+
+3.2150747
+6.85
+
+8.0376866
+7.38
+
+16.075373
+12.39
+
+32.150747
+29.12
+
+EOF
+
+
+./t > out
+
+linux> pr -w 100 -m -t <(cat t) <(cat out) | expand
+
+linux> sed '/^$/d' t
+1
+1
+2.0833333
+2.82
+3.2150747
+12.74
+3.2150747
+6.85
+8.0376866
+7.38
+16.075373
+12.39
+32.150747
+29.12
+
+linux> sed '/^$/d' t | sed -n '0~2p'
+1
+2.82
+12.74
+6.85
+7.38
+12.39
+29.12
+linux> sed '/^$/d' t | sed -n '1~2p'
+1
+2.0833333
+3.2150747
+3.2150747
+8.0376866
+16.075373
+32.150747
+
+linux> paste -d"\t" t[0-2] | expand -8
+1       1       1
+2       2.82    2.0833333
+3       12.74   3.2150747
+4       6.85    3.2150747
+5       7.38    8.0376866
+6       12.39   16.075373
+7       29.12   32.150747
+
+Column 2; their numbers (https://www.goldback.com/exchange-rate#gb-gold-dollar) "Comparison of Fractional Gold Products"
+Column 3; my numbers (using straight maths)
+
+No rhyme nor reason ?
+
+Oh I get it:
+
+They figure out the USD price of 1 goldback including markup and use that as base unit.
+
+linux> for i in `cat t1 | paste -s -d " " `; do   units -o "%5.2f" -t "3.36 * $i" ; done
+ 3.36
+ 9.48
+42.81
+23.02
+24.80
+41.63
+97.84
+
+They work backwards from the price market participants are willing to pay for each item (in each of the 7 mining carts).
+
+They then divide by 3.36 USD, the price the market is willing to pay for their smallest 1 unit note.
+
+Aha !
+
+
+-----------------------------------------------------------
+
+End of train track
+
+-----------------------------------------------------------
+
+Extra fun:
+
+
+Goldback to milligrammes:
+linux> units -t "(1 / 1000 ) ozt" mg
+31.103477
+
+
+Troy ounce to milligramme:
+linux> units -t ozt mg
+31103.477
+
+
+Grammes to grains and to Goldbacks:
+linux> units -t g gr 
+15.432358
+linux> units -t g "(1 / 1000 ) ozt" 
+32.150747
+1 gramme contains 32.15 Goldbacks
+
+
+Grains to grammes:
+linux> units -t gr g
+0.06479891
+linux> units -t gr mg
+64.79891
+
+
+Rough check/ sanity check:
+linux> bc <<< "16 * 64"
+1024
+linux> bc <<< "2^4 * 2^6"
+1024
+
+
+
+
+
+
