@@ -1,0 +1,117 @@
+
+
+[Tech note] How to pick out redemptions visually from Explorer screen.
+
+NB: it is far more efficient to do this with awk on the CSV file
+
+https://explorer.kinesis.money/
+
+
+linux> echo -n "GBTY......4A7E" | wc -c
+14
+
+# ------------------------------
+
+. ./KAG-set-main-account-symbols.sh 
+
+linux> set | grep KAG
+KAG_EmissionAccount=GCGTMT2X6NUV6ABEOAOSDI2YQ7FXQOQYKYA7KVZQ5ID67GQU3C6AIUGU
+KAG_GAPSAccount=GAPS3KZ4YVEL4UYFAGTE6L6H6GRZ3KYBWGY2UTGTAJBXGUJLBCYQIXXA
+KAG_HotWalletAccount=GBTYCT2VVWURNU23ZSR3IPSXU6BRWT3ELIOQJAJOKGIHCLLE6YDX4A7E
+KAG_InflationAccount=GBBVUAMR3CYNQKMNHVWCMUQVE3XQIL3WM5GSP5D6SCECKIZNNBT6FT7I
+KAG_RootAccount=GAUCIFE37F4KQ5F6QPNSZ75QKRQTNRCF32FZNUXMCXUFSKRMWGF76LTI
+
+echo  ${KAG_HotWalletAccount:0:4}"......"${KAG_HotWalletAccount:52:4}
+echo  ${KAG_EmissionAccount:0:4}"......"${KAG_EmissionAccount:52:4}
+
+linux> echo  ${KAG_HotWalletAccount:0:4}"......"${KAG_HotWalletAccount:52:4}
+echo  ${KAG_EmissionAccount:0:4}"......"${KAG_EmissionAccount:52:4}
+GBTY......4A7E
+GCGT......IUGU
+
+echo -n ${KAG_HotWalletAccount:0:4}; printf %6s | tr " " "."; echo ${KAG_HotWalletAccount:52:4}
+echo -n ${KAG_EmissionAccount:0:4}; printf %6s | tr " " "."; echo ${KAU_EmissionAccount:52:4}
+
+linux> echo -n ${KAG_HotWalletAccount:0:4}; printf %6s | tr " " "."; echo ${KAG_HotWalletAccount:52:4}
+echo -n ${KAG_EmissionAccount:0:4}; printf %6s | tr " " "."; echo ${KAU_EmissionAccount:52:4}
+GBTY......4A7E
+GCGT......JCCS
+
+H2E flows (aka Redemtions or flows between system HotWallet and the Emissions account (aka The Mint))
+
+Do screen search (control-F) at explorer
+https://explorer.kinesis.money
+
+From
+GBTY......4A7E
+To
+GCGT......JCCS
+
+for KAG
+
+H2E means
+GBTY has to appear in the left column
+GCGT in the right column
+
+You should never see flows in the opposite direction (E2H).
+So for the purposes of detecting redemptions, ignore GCGT in the left column. Those transactions are not redemptions. For the full details, I invite you to consult the full trail of my forensics work here on this forum ;-)
+
+manual technique
+<control-F>
+then
+<control-G>
+to repeat the same search
+
+
+I can currently see only 1 of those transactions (flows)
+
+https://explorer.kinesis.money/transaction/KAG/825edd2561e01bd20407e87b1e8ea948f3a0e4c04423a142b11c4ee24b06c40b
+
+
+
+# ------------------------------
+
+linux> 
+. ./KAU-set-main-account-symbols.sh 
+
+set | grep KAU
+KAU_EmissionAccount=GDIENNQ3BXCTB74ZYCQAGXCY7KTGFBZGHRMUVF3ZLIW6SMAZIGX2JCCS
+KAU_GAPSAccount=GAPS3KZ4YVEL4UYFAGTE6L6H6GRZ3KYBWGY2UTGTAJBXGUJLBCYQIXXA
+KAU_HotWalletAccount=GBUBOKEFUNF4ZZQA7QJCGYF54U4N2T5VV2QAN7RWQCVS75OOI5KSVCZS
+KAU_InflationAccount=GCO75U2EVO3HKGYO2PUO2ZO7CEL52JPQL5WYUHHKPEORQSASSKT4MA3B
+KAU_RootAccount=GDTYNME5HX3FCFDS4D3R3LTVH3DFLSB5HWVTV3VVL4PBGQ6SCKC7J3PD
+
+echo -n ${KAU_HotWalletAccount:0:4}; printf %6s | tr " " "."; echo ${KAU_HotWalletAccount:52:4}
+echo -n ${KAU_EmissionAccount:0:4}; printf %6s | tr " " "."; echo ${KAU_EmissionAccount:52:4}
+GBUB......VCZS
+GDIE......JCCS
+
+Example:
+https://explorer.kinesis.money/transaction/KAU/4ec511091cf6c5b4a8c88289f4c7b8f6cbec4b60927994ef81d8ec71bfecfbb8
+
+H2E flows (aka Redemtions or flows between system HotWallet and the Emissions account (aka The Mint))
+
+Do screen search (control-F) at explorer
+https://explorer.kinesis.money
+
+From
+GBUB......VCZS
+To
+GDIE......JCCS
+
+for KAU
+
+I can currently see only 2 of those transactions (flows)
+
+https://explorer.kinesis.money/transaction/KAU/63cc42d21d964c38810a318e0a4c8d4249f55a11ade57716e34c2f70b41ef389
+https://explorer.kinesis.money/transaction/KAU/20e300dc821846201aee0ad02e5e48da1e24fe4e6d6f2f2575bc5f9fce34e82b
+
+Reminder:
+H2E flows are redemptions of 2 types:
+- system (market maker balancing the books to keep 1:1 ? )
+- user redemptions to physical
+
+
+# ------------------------------
+
+
