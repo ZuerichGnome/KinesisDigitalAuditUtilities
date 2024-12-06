@@ -1,0 +1,53 @@
+Kinesis.money Ertrag:
+
+#
+# Ertrag Silber
+#
+# delete last 2 lines
+# head -n -2
+FileName="../Auszüge/KMS Yield report calendar 2023 manual scrape"
+
+grep -i "yield" "$FileName" | sort -u | head -n -2 | grep -i silver > tmp1
+#
+while IFS= read x
+do
+   echo "$x";
+   grep -A 2 "$x" "$FileName" | grep KAG | tr -d '[:alpha:]' | tr -d \+ | awk '{sum += $1}  END {print sum}';
+done < tmp1 > tmp3
+#
+x1=`cat tmp3 | grep '[0-9]' | awk '{sum += $1}  END {print sum}'`
+printf "# Kinesis KAG ERTRAG\n" >> Ziffer_30_2 
+printf "# Anzahl in ozt\n" >> Ziffer_30_2
+printf "# $x1\n" >> Ziffer_30_2
+ozt_kg=`units -t ozt kg` >> Ziffer_30_2
+printf "# Umwandlung ozt nach kg: %8.6f\n" "$ozt_kg" >> Ziffer_30_2 
+printf "# Menge ozt AG: %.2f\n" "$x1" >> Ziffer_30_2
+units -t "$x1 * $ozt_kg" | xargs printf "# Menge kg AG: %.2f\n" >> Ziffer_30_2
+printf "# umgewandelt in CHF: \n" >> Ziffer_30_2
+units -t "$x1 * $ozt_kg * $SilberPreis" | xargs printf "%.2f\n" >> Ziffer_30_2
+#
+#
+# Ertrag Gold
+#
+grep -i "yield" "$FileName" | sort -u | head -n -2 | grep -i gold > tmp2
+#
+while IFS= read x
+do
+   echo "$x";
+   grep -A 2 "$x" "$FileName" | grep KAU | tr -d '[:alpha:]' | tr -d \+ | awk '{sum += $1}  END {print sum}';
+done < tmp2 > tmp4
+#
+x2=`cat tmp4 | grep '[0-9]' | awk '{sum += $1}  END {print sum}'`
+#
+printf "# Kinesis KAU ERTRAG\n" >> Ziffer_30_2
+printf "# Anzahl in g\n" >> Ziffer_30_2
+printf "# $x2\n"  >> Ziffer_30_2
+g_kg=`units -o "%5.6f" -t g kg` >> Ziffer_30_2
+printf "# Umwandlung g nach kg: %8.6f\n" "$g_kg" >> Ziffer_30_2
+units -t "$x2 * $g_kg" | xargs printf "# Menge kg AU: %.5f\n" >> Ziffer_30_2 
+printf "# g nach CHF: \n" >> Ziffer_30_2
+units -t "$x2 * $g_kg * $GoldPreis" | xargs printf "%.5f\n" >> Ziffer_30_2 
+printf "# Summe von den beiden in CHF\n" >> Ziffer_30_2
+units -t "$x1 * $ozt_kg * $SilberPreis + $x2 * $g_kg * $GoldPreis" | xargs printf "%.5f\n" >> Ziffer_30_2 
+
+

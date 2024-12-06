@@ -1,0 +1,66 @@
+
+Anonymising my personal data by changing:
+
+KM number
+to
+KM12345678
+
+FileName="../Auszüge/CoinTracking Account balance (10_ off)_Statement_KM12345678_04_12_2024_04_12_2024.csv"
+
+cat "$FileName" | grep Distri | awk -F "," '{print $10}' | sort -u > tmp
+linux> cat tmp | nl -ba
+     1	Holder's_Distribution
+     2	Holder's_Distribution_Adjustment
+     3	KVT's_Distribution
+     4	KVT's_Distribution_Adjustment
+     5	Minter's_Distribution
+     6	Minter's_Distribution_Adjustment
+     7	Velocity's_Distribution
+
+cat "$FileName" | sed -n '1,1p' | awk -F "," '{print $0}'| sed 's/,/\n/g' | nl -ba
+     1	Type
+     2	Buy Amount
+     3	Buy Currency
+     4	Sell
+     5	Sell Currency
+     6	Fee
+     7	Fee Currency
+     8	Exchange
+     9	Trade-Group
+    10	Comment
+    11	Date
+    12	Transaction ID
+
+rm -f output
+touch output
+for i in KAG
+do
+	CoinType=$i
+	while IFS= read j
+	do
+	   SearchString="$j"
+	   CoinType=$i
+	   printf "%-5s %20s\n" $i $j
+	   cat "$FileName" | awk -F, -v s="$SearchString" -v t=$CoinType '(($1 == "Income") && ($10 == s) && ($3==t)) {print $3, $2, $11}' | grep 2023 | awk -F " " '{sum += $2}  END {print sum}'   
+	done < tmp >> output 
+done
+cat output | grep [0-9] | paste -s -d + | bc -l | xargs printf "%.5f\n"
+#
+# Same code. Change one character (KAG to KAU)
+#
+rm -f output
+touch output
+for i in KAU
+do
+	CoinType=$i
+	while IFS= read j
+	do
+	   SearchString="$j"
+	   CoinType=$i
+	   printf "%-5s %20s\n" $i $j
+	   cat "$FileName" | awk -F, -v s="$SearchString" -v t=$CoinType '(($1 == "Income") && ($10 == s) && ($3==t)) {print $3, $2, $11}' | grep 2023 | awk -F " " '{sum += $2}  END {print sum}'   
+	done < tmp >> output 
+done
+cat output | grep [0-9] | paste -s -d + | bc -l | xargs printf "%.5f\n"
+
+
