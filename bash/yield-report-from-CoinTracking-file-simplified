@@ -1,0 +1,86 @@
+yield-report-from-CoinTracking-file
+simplified
+Di 17 Dez 2024 17:44:50 CET
+
+
+Anonymising my personal data by changing:
+
+KM number
+to
+KM12345678
+
+------------------
+
+FileName="../Auszüge/CoinTracking Account balance (10_ off)_Statement_KM12345678_04_12_2024_04_12_2024.csv"
+cat "$FileName" | grep Distri | awk -F "," '{print $10}' | sort -u > tmp
+
+# linux> cat tmp | nl -ba | sed 's/^/# /g' 
+#      1	Holder's_Distribution
+#      2	Holder's_Distribution_Adjustment
+#      3	KVT's_Distribution
+#      4	KVT's_Distribution_Adjustment
+#      5	Minter's_Distribution
+#      6	Minter's_Distribution_Adjustment
+#      7	Velocity's_Distribution
+
+# linux> cat "$FileName" | sed -n '1,1p' | awk -F "," '{print $0}'| sed 's/,/\n/g' | nl -ba | sed 's/^/# /g'
+#      1	Type
+#      2	Buy Amount
+#      3	Buy Currency
+#      4	Sell
+#      5	Sell Currency
+#      6	Fee
+#      7	Fee Currency
+#      8	Exchange
+#      9	Trade-Group
+#     10	Comment
+#     11	Date
+#     12	Transaction ID
+
+if [ -f "Methode_2" ]; then rm -f Methode_2; fi; touch Methode_2;
+for i in KAG KAU
+do
+	rm -f output
+	touch output
+	CoinType=$i
+	printf "%s\n" $i >> Methode_2 
+	while IFS= read j
+	do
+	   SearchString="$j"
+	   CoinType=$i
+	   printf "%-5s %20s\n" $i $j
+	   cat "$FileName" | awk -F, -v s="$SearchString" -v t=$CoinType '(($1 == "Income") && ($10 == s) && ($3==t)) {print $3, $2, $11}' | grep 2023 | awk -F " " '{sum += $2}  END {print sum}'   
+	done < tmp >> output
+	cat output | grep [0-9] | paste -s -d + | bc -l | xargs printf "%.5f\n" >> Methode_2 
+done
+
+x1=`grep -A 1 KAG Methode_2 | tail -1`
+printf "# Kinesis KAG ERTRAG\n" >> Ziffer_4_1_ErtragAusWertschriften 
+printf "# Anzahl in ozt\n" >> Ziffer_4_1_ErtragAusWertschriften
+printf "# $x1\n" >> Ziffer_4_1_ErtragAusWertschriften
+ozt_kg=`units -t ozt kg` >> Ziffer_4_1_ErtragAusWertschriften
+printf "# Umwandlung ozt nach kg: %8.6f\n" "$ozt_kg" >> Ziffer_4_1_ErtragAusWertschriften 
+printf "# Menge ozt AG: %.2f\n" "$x1" >> Ziffer_4_1_ErtragAusWertschriften
+units -t "$x1 * $ozt_kg" | xargs printf "# Menge kg AG: %.2f\n" >> Ziffer_4_1_ErtragAusWertschriften
+printf "# umgewandelt in CHF: \n" >> Ziffer_4_1_ErtragAusWertschriften
+units -t "$x1 * $ozt_kg * $SilberPreis" | xargs printf "# %.2f\n" >> Ziffer_4_1_ErtragAusWertschriften
+
+x2=`grep -A 1 KAU Methode_2 | tail -1`
+printf "# Kinesis KAU ERTRAG\n" >> Ziffer_4_1_ErtragAusWertschriften
+printf "# Anzahl in g\n" >> Ziffer_4_1_ErtragAusWertschriften
+printf "# $x2\n"  >> Ziffer_4_1_ErtragAusWertschriften
+g_kg=`units -o "%5.6f" -t g kg` >> Ziffer_4_1_ErtragAusWertschriften
+printf "# Umwandlung g nach kg: %8.6f\n" "$g_kg" >> Ziffer_4_1_ErtragAusWertschriften
+units -t "$x2 * $g_kg" | xargs printf "# Menge kg AU: %.5f\n" >> Ziffer_4_1_ErtragAusWertschriften 
+printf "# g nach CHF: \n" >> Ziffer_4_1_ErtragAusWertschriften
+units -t "$x2 * $g_kg * $GoldPreis" | xargs printf "# %.5f\n" >> Ziffer_4_1_ErtragAusWertschriften 
+
+printf "# Summe von den beiden in CHF\n" >> Ziffer_4_1_ErtragAusWertschriften
+units -t "$x1 * $ozt_kg * $SilberPreis + $x2 * $g_kg * $GoldPreis" | xargs printf "# %.5f\n" >> Ziffer_4_1_ErtragAusWertschriften 
+
+
+
+------------------
+
+
+
