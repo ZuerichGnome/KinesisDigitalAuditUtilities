@@ -1,0 +1,54 @@
+# Read diagonally:
+# https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.4
+
+sudo apt-get install -y powershell
+
+# Start PowerShell
+pwsh
+exit
+
+#
+# OCR Frieda's work:
+#
+tesseract kag.jpg t
+ls -ngtr
+cat t.txt
+
+#
+# Create dedicated bash shell for this test:
+#
+PS1="linux> "; echo -en "\033]0; Kinesis pwsh test work 1\a";
+
+echo $HOME
+ls -ng $HOME/.config
+mkdir $HOME/.config/powershell
+touch $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
+
+cat >> $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1 << EOF
+function prompt {"PS-pwsh> "}
+EOF
+
+linux> pwsh
+PowerShell 7.4.6
+PS-pwsh> 
+$headers = New-Object "System.Collections.Generic.Dictionary[ [String], [String]]"
+$headers.Add("Accept", “application/json")
+$response = Invoke-RestMethod 'https://kag-mainnet.kinesisgroup.io/coin_in_circulation' -Method 'GET' -Headers $headers
+$response.records[-1]
+
+PS-pwsh> $headers = New-Object "System.Collections.Generic.Dictionary[ [String], [String]]"
+PS-pwsh> $headers.Add("Accept", “application/json")
+PS-pwsh> $response = Invoke-RestMethod 'https://kag-mainnet.kinesisgroup.io/coin_in_circulation' -Method 'GET' -Headers $headers
+PS-pwsh> $response.records[-1]
+
+circulation : 3781261.6828000
+mint        : 9764885.3399000
+redemption  : 5983623.6571000
+date        : 1/7/2025 12:00:00 AM
+ledger      : 35638359
+
+
+
+
+
+
